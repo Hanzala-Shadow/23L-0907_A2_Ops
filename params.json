@@ -4,5 +4,29 @@
     "train": 0.7,
     "validation": 0.15,
     "test": 0.15
+  },
+  "preprocessing": {
+    "policy": "rgb-white-letterbox-v1",
+    "image_size": 128,
+    "batch_size": 16,
+    "cache_in_memory": true
+  },
+  "cnn_baseline": {
+    "seed": 42,
+    "epochs": 20,
+    "filters": [
+      16,
+      32,
+      64
+    ],
+    "dense_units": 64,
+    "dropout": 0.3,
+    "learning_rate": 0.001,
+    "early_stopping_patience": 5,
+    "lr_patience": 2,
+    "augmentation": {
+      "rotation": 0.05,
+      "zoom": 0.1
+    }
   }
 }

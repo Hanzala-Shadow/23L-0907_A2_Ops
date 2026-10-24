@@ -10,3 +10,21 @@ stages:
           - split
     outs:
       - data/splits
+  train_cnn:
+    cmd: python -m scripts.train_cnn
+    deps:
+      - scripts/train_cnn.py
+      - scripts/prepare_splits.py
+      - visionguard
+      - requirements/locked.txt
+      - reports/data/image_manifest.csv
+      - data/raw
+      - data/splits
+    params:
+      - params.json:
+          - preprocessing
+          - cnn_baseline
+    outs:
+      - models/cnn_baseline
+      - reports/training/cnn_baseline:
+          cache: false

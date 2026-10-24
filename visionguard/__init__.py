@@ -1,0 +1,1 @@
+"""VisionGuard image classification components."""

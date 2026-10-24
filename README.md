@@ -1,8 +1,8 @@
 # 23L-0907_A2_Ops
 
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
-currently contains dataset download, audit, deduplication and split preparation.
-Model training, the Flask application and deployment are the next stages.
+contains dataset download, audit, deduplication, split preparation and a CPU CNN
+training pipeline. The Flask application and deployment are later stages.
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private
@@ -98,6 +98,26 @@ selection must use training and validation data.
 
 See [data versioning](docs/data-versioning.md) for storage and restore commands.
 
+## CPU baseline training
+
+The CNN uses 128 x 128 RGB inputs, aspect-preserving white padding, train-only
+augmentation, three convolutional blocks, batch normalization and dropout.
+Parameters are in `params.json`. The decoder accepts image paths and binary
+uploads so future inference can reuse the training preprocessing.
+
+```bash
+source .venv/bin/activate
+python scripts/check_disk.py
+PYTHONHASHSEED=42 dvc repro train_cnn
+dvc push -j 2
+```
+
+The training stage logs to DagsHub MLflow using ignored local credentials. It
+saves the checkpoint with the lowest validation loss, training curves and
+validation metrics. The test set remains reserved for final evaluation.
+See [training details](docs/training.md) for architecture, data handling,
+reproducibility and artifact locations.
+
 ## Storage and checks
 
 Keep at least 2 GiB free on the Linux filesystem. Downloads and split generation
@@ -108,7 +128,7 @@ download caches, and do not copy images into split directories.
 ```bash
 python scripts/check_disk.py
 python -m pytest -q
-ruff check scripts tests
+ruff check scripts tests visionguard
 python scripts/check_repository.py --history
 ```
 
