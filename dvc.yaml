@@ -1,4 +1,14 @@
 stages:
+  tune_toy:
+    cmd: python -m scripts.tune_toy
+    deps:
+      - scripts/tune_toy.py
+      - scripts/train_cnn.py
+      - requirements/locked.txt
+    outs:
+      - models/toy_mnist
+      - reports/training/toy_tuner:
+          cache: false
   tune_mobilenet:
     cmd: python -m scripts.tune_mobilenet
     deps:

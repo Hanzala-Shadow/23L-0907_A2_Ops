@@ -1,5 +1,9 @@
 # Keras Tuner search
 
+The assignment's built-in dataset example is documented in
+[the MNIST toy search](tuning-toy.md). Its four trials are separate from the eight
+VisionGuard trials described here.
+
 Run the search with the existing CPU environment and authenticated DagsHub MLflow
 configuration:
 
