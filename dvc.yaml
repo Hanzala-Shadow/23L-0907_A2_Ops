@@ -1,0 +1,12 @@
+stages:
+  prepare_splits:
+    cmd: python3 scripts/prepare_splits.py
+    deps:
+      - scripts/prepare_splits.py
+      - reports/data/image_manifest.csv
+      - data/raw
+    params:
+      - params.json:
+          - split
+    outs:
+      - data/splits

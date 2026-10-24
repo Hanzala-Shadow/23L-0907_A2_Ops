@@ -1,0 +1,31 @@
+schema: '2.0'
+stages:
+  prepare_splits:
+    cmd: python3 scripts/prepare_splits.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: b2cec67839f742df4653f66d4bcbbafb.dir
+      size: 503783378
+      nfiles: 975
+    - path: reports/data/image_manifest.csv
+      hash: md5
+      md5: fae4a0ca90a49528226e966b0171d580
+      size: 184433
+    - path: scripts/prepare_splits.py
+      hash: md5
+      md5: d881854b13eed441d80217ddad336b5f
+      size: 9613
+    params:
+      params.json:
+        split:
+          seed: 42
+          train: 0.7
+          validation: 0.15
+          test: 0.15
+    outs:
+    - path: data/splits
+      hash: md5
+      md5: 97515564759d6584cc1acdc8bd30fe93.dir
+      size: 131561
+      nfiles: 5
