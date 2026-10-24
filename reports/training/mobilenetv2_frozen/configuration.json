@@ -1,0 +1,44 @@
+{
+  "phase": "frozen",
+  "preprocessing": {
+    "policy": "rgb-white-letterbox-v1",
+    "image_size": 128,
+    "batch_size": 16,
+    "cache_in_memory": true
+  },
+  "mobilenetv2": {
+    "seed": 42,
+    "alpha": 1.0,
+    "dense_units": 64,
+    "dropout": 0.3,
+    "augmentation": {
+      "rotation": 0.05,
+      "zoom": 0.1
+    },
+    "frozen": {
+      "epochs": 12,
+      "learning_rate": 0.001,
+      "early_stopping_patience": 3,
+      "lr_patience": 2
+    },
+    "finetuned": {
+      "epochs": 8,
+      "learning_rate": 1e-05,
+      "early_stopping_patience": 3,
+      "lr_patience": 2,
+      "unfreeze_prefix": "block_16_"
+    }
+  },
+  "label_mapping": {
+    "real": 0,
+    "ai_generated": 1
+  },
+  "input_dtype": "uint8",
+  "normalization": "pixel / 127.5 - 1 inside model",
+  "test_evaluated": false,
+  "pretrained_weights": {
+    "source_url": "https://storage.googleapis.com/tensorflow/keras-applications/mobilenet_v2/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_128_no_top.h5",
+    "sha256": "31150c34687a0e3f78a2bd0a8009ac321b966d10f3b184be4ff34c752f9dbe7f",
+    "bytes": 9406464
+  }
+}

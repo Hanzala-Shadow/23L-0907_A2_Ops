@@ -1,0 +1,18 @@
+{
+  "run_id": "30e0c29830cf47509601dd80fbe38b39",
+  "experiment_id": "0",
+  "run_url": "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops/experiments/#/experiments/0/runs/30e0c29830cf47509601dd80fbe38b39",
+  "git_commit": "b1d5f71123345377024bd6cf533eed72b461f6b9",
+  "dvc_raw_md5": "b2cec67839f742df4653f66d4bcbbafb.dir",
+  "data_fingerprint": "ccf9e412522a4da9cb0f9b8d01c5f9e27ba44b30118e3c9f731b21e5d6b2d793",
+  "model_sha256": "ac745383244fb23a755cd5de9133b5ba473b651dcaccf3149fbe9139ea47347c",
+  "test_evaluated": false,
+  "model_roundtrip": "passed",
+  "logging_method": "tensorflow_autolog",
+  "minimum_free_gib_observed": 5.9034881591796875,
+  "free_after_gib": 5.903453826904297,
+  "split_counts": {
+    "train": 681,
+    "validation": 146
+  }
+}

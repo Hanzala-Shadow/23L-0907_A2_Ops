@@ -1,0 +1,4 @@
+model,validation_loss,validation_accuracy,validation_precision,validation_recall,validation_f1,validation_roc_auc,best_epoch,epochs_completed,run_id,model_path
+cnn_baseline,0.7012144923210144,0.4452054794520548,0.0,0.0,0.0,0.515099715099715,1,6,932b890056eb403aaefa21905070956d,models/cnn_baseline/best.keras
+mobilenetv2_frozen,0.4984475374221802,0.7808219178082192,0.810126582278481,0.7901234567901234,0.8,0.8417853751187084,3,6,30e0c29830cf47509601dd80fbe38b39,models/mobilenetv2_frozen/best.keras
+mobilenetv2_finetuned,0.5104479193687439,0.773972602739726,0.7926829268292683,0.8024691358024691,0.7975460122699386,0.8427350427350426,2,5,ae95c40886344577ade22fa344f0a7a9,models/mobilenetv2_finetuned/best.keras

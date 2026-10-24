@@ -1,0 +1,62 @@
+{
+  "selection_metric": "validation_loss",
+  "threshold": 0.5,
+  "provisional_selected_model": "mobilenetv2_frozen",
+  "selected_model_path": "models/mobilenetv2_frozen/best.keras",
+  "test_evaluated": false,
+  "models": [
+    {
+      "model": "cnn_baseline",
+      "validation_loss": 0.7012144923210144,
+      "validation_accuracy": 0.4452054794520548,
+      "validation_precision": 0.0,
+      "validation_recall": 0.0,
+      "validation_f1": 0.0,
+      "validation_roc_auc": 0.515099715099715,
+      "best_epoch": 1,
+      "epochs_completed": 6,
+      "training_seconds": 149.27058570000008,
+      "parameters": 28145,
+      "threshold": 0.5,
+      "run_id": "932b890056eb403aaefa21905070956d",
+      "run_url": "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops/experiments/#/experiments/0/runs/932b890056eb403aaefa21905070956d",
+      "model_path": "models/cnn_baseline/best.keras"
+    },
+    {
+      "model": "mobilenetv2_frozen",
+      "validation_loss": 0.4984475374221802,
+      "validation_accuracy": 0.7808219178082192,
+      "validation_precision": 0.810126582278481,
+      "validation_recall": 0.7901234567901234,
+      "validation_f1": 0.8,
+      "validation_roc_auc": 0.8417853751187084,
+      "best_epoch": 3,
+      "epochs_completed": 6,
+      "training_seconds": 136.78328321699883,
+      "parameters": 2340033,
+      "trainable_parameters": 82049,
+      "threshold": 0.5,
+      "run_id": "30e0c29830cf47509601dd80fbe38b39",
+      "run_url": "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops/experiments/#/experiments/0/runs/30e0c29830cf47509601dd80fbe38b39",
+      "model_path": "models/mobilenetv2_frozen/best.keras"
+    },
+    {
+      "model": "mobilenetv2_finetuned",
+      "validation_loss": 0.5104479193687439,
+      "validation_accuracy": 0.773972602739726,
+      "validation_precision": 0.7926829268292683,
+      "validation_recall": 0.8024691358024691,
+      "validation_f1": 0.7975460122699386,
+      "validation_roc_auc": 0.8427350427350426,
+      "best_epoch": 2,
+      "epochs_completed": 5,
+      "training_seconds": 127.61810907600011,
+      "parameters": 2340033,
+      "trainable_parameters": 551489,
+      "threshold": 0.5,
+      "run_id": "ae95c40886344577ade22fa344f0a7a9",
+      "run_url": "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops/experiments/#/experiments/0/runs/ae95c40886344577ade22fa344f0a7a9",
+      "model_path": "models/mobilenetv2_finetuned/best.keras"
+    }
+  ]
+}

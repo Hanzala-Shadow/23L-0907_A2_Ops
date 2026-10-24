@@ -1,8 +1,9 @@
 # 23L-0907_A2_Ops
 
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
-contains dataset download, audit, deduplication, split preparation and a CPU CNN
-training pipeline. The Flask application and deployment are later stages.
+contains dataset download, audit, deduplication, split preparation and CPU
+training pipelines for a custom CNN and MobileNetV2. The Flask application and
+deployment are later stages.
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private
@@ -134,6 +135,12 @@ dvc push -j 2
 The two phases use TensorFlow autologging on DagsHub. They retain independent
 checkpoints and validation reports so fine-tuning can be compared with the
 frozen model and custom CNN. See [transfer-learning details](docs/transfer-learning.md).
+
+The initial [validation comparison](reports/training/model_comparison.md) favours
+the frozen MobileNetV2 checkpoint: 78.08% accuracy, F1 0.8000 and ROC-AUC 0.8418.
+Fine-tuning did not improve validation loss. These are provisional validation
+results; the test set has not been evaluated. See the
+[result analysis](reports/training/transfer-results.md).
 
 ## Storage and checks
 

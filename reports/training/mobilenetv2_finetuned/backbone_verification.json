@@ -1,0 +1,9 @@
+{
+  "phase": "finetuned",
+  "changed_backbone_layers": [
+    "block_16_expand",
+    "block_16_depthwise",
+    "block_16_project"
+  ],
+  "frozen_weights_and_batchnorm_unchanged": true
+}

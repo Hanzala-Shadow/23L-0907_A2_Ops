@@ -1,0 +1,5 @@
+{
+  "phase": "frozen",
+  "changed_backbone_layers": [],
+  "frozen_weights_and_batchnorm_unchanged": true
+}

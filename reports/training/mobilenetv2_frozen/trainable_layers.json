@@ -1,0 +1,7 @@
+{
+  "trainable_backbone_layers": [],
+  "trainable_parameters": 82049,
+  "total_parameters": 2340033,
+  "batchnorm_training_mode": false,
+  "final_projection_trainable": false
+}

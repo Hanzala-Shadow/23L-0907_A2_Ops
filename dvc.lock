@@ -107,3 +107,235 @@ stages:
       md5: 0d328fcf4ee6ddb9d315cc4ff029a6fb.dir
       size: 1293452
       nfiles: 12
+  train_mobilenet_frozen:
+    cmd: python -m scripts.train_transfer --phase frozen
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: b2cec67839f742df4653f66d4bcbbafb.dir
+      size: 503783378
+      nfiles: 975
+    - path: data/splits
+      hash: md5
+      md5: 97515564759d6584cc1acdc8bd30fe93.dir
+      size: 131561
+      nfiles: 5
+    - path: reports/data/image_manifest.csv
+      hash: md5
+      md5: fae4a0ca90a49528226e966b0171d580
+      size: 184433
+    - path: requirements/locked.txt
+      hash: md5
+      md5: 454e5ab9b4396d41a771946c973aea11
+      size: 3833
+    - path: scripts/prepare_splits.py
+      hash: md5
+      md5: d881854b13eed441d80217ddad336b5f
+      size: 9613
+    - path: scripts/train_cnn.py
+      hash: md5
+      md5: d29680b23e7f3c97c2b708b7fffc0842
+      size: 17049
+    - path: scripts/train_transfer.py
+      hash: md5
+      md5: 826d108c25d74104e3aa473db46a7b5d
+      size: 13828
+    - path: visionguard/__init__.py
+      hash: md5
+      md5: abe17b248b193886ba74b36d03befa4f
+      size: 51
+    - path: visionguard/cnn.py
+      hash: md5
+      md5: 1bc466395d435434463e5e11e8547c99
+      size: 2157
+    - path: visionguard/pipeline.py
+      hash: md5
+      md5: 8c1bca4ff24bbc63b207e8a76db4b06d
+      size: 2840
+    - path: visionguard/preprocessing.py
+      hash: md5
+      md5: d5762acc6bbffd3126c6de87602d2138
+      size: 1369
+    - path: visionguard/transfer.py
+      hash: md5
+      md5: 0b4aa44a321961aa66b7eb9cb355251e
+      size: 3708
+    - path: visionguard/transfer_reporting.py
+      hash: md5
+      md5: 3613f2a3e4cf4b1cbafd1d3e7a14b07f
+      size: 7350
+    params:
+      params.json:
+        mobilenetv2.alpha: 1.0
+        mobilenetv2.augmentation:
+          rotation: 0.05
+          zoom: 0.1
+        mobilenetv2.dense_units: 64
+        mobilenetv2.dropout: 0.3
+        mobilenetv2.frozen:
+          epochs: 12
+          learning_rate: 0.001
+          early_stopping_patience: 3
+          lr_patience: 2
+        mobilenetv2.seed: 42
+        preprocessing:
+          policy: rgb-white-letterbox-v1
+          image_size: 128
+          batch_size: 16
+          cache_in_memory: true
+    outs:
+    - path: models/mobilenetv2_frozen
+      hash: md5
+      md5: 2e084cf06c0dd2d9bb902fc66a4a55b0.dir
+      size: 10630799
+      nfiles: 2
+    - path: reports/training/mobilenetv2_frozen
+      hash: md5
+      md5: 83577e129181cdd0b7a4661e6d21519c.dir
+      size: 256643
+      nfiles: 13
+  train_mobilenet_finetuned:
+    cmd: python -m scripts.train_transfer --phase finetuned
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: b2cec67839f742df4653f66d4bcbbafb.dir
+      size: 503783378
+      nfiles: 975
+    - path: data/splits
+      hash: md5
+      md5: 97515564759d6584cc1acdc8bd30fe93.dir
+      size: 131561
+      nfiles: 5
+    - path: models/mobilenetv2_frozen
+      hash: md5
+      md5: 2e084cf06c0dd2d9bb902fc66a4a55b0.dir
+      size: 10630799
+      nfiles: 2
+    - path: reports/data/image_manifest.csv
+      hash: md5
+      md5: fae4a0ca90a49528226e966b0171d580
+      size: 184433
+    - path: reports/training/mobilenetv2_frozen/run.json
+      hash: md5
+      md5: 0d57117b1badbe298b12961c5b987556
+      size: 756
+    - path: requirements/locked.txt
+      hash: md5
+      md5: 454e5ab9b4396d41a771946c973aea11
+      size: 3833
+    - path: scripts/prepare_splits.py
+      hash: md5
+      md5: d881854b13eed441d80217ddad336b5f
+      size: 9613
+    - path: scripts/train_cnn.py
+      hash: md5
+      md5: d29680b23e7f3c97c2b708b7fffc0842
+      size: 17049
+    - path: scripts/train_transfer.py
+      hash: md5
+      md5: 826d108c25d74104e3aa473db46a7b5d
+      size: 13828
+    - path: visionguard/__init__.py
+      hash: md5
+      md5: abe17b248b193886ba74b36d03befa4f
+      size: 51
+    - path: visionguard/cnn.py
+      hash: md5
+      md5: 1bc466395d435434463e5e11e8547c99
+      size: 2157
+    - path: visionguard/pipeline.py
+      hash: md5
+      md5: 8c1bca4ff24bbc63b207e8a76db4b06d
+      size: 2840
+    - path: visionguard/preprocessing.py
+      hash: md5
+      md5: d5762acc6bbffd3126c6de87602d2138
+      size: 1369
+    - path: visionguard/transfer.py
+      hash: md5
+      md5: 0b4aa44a321961aa66b7eb9cb355251e
+      size: 3708
+    - path: visionguard/transfer_reporting.py
+      hash: md5
+      md5: 3613f2a3e4cf4b1cbafd1d3e7a14b07f
+      size: 7350
+    params:
+      params.json:
+        mobilenetv2.alpha: 1.0
+        mobilenetv2.augmentation:
+          rotation: 0.05
+          zoom: 0.1
+        mobilenetv2.dense_units: 64
+        mobilenetv2.dropout: 0.3
+        mobilenetv2.finetuned:
+          epochs: 8
+          learning_rate: 1e-05
+          early_stopping_patience: 3
+          lr_patience: 2
+          unfreeze_prefix: block_16_
+        mobilenetv2.seed: 42
+        preprocessing:
+          policy: rgb-white-letterbox-v1
+          image_size: 128
+          batch_size: 16
+          cache_in_memory: true
+    outs:
+    - path: models/mobilenetv2_finetuned
+      hash: md5
+      md5: 80a7b010c35b799e1be5b4fe80bb4644.dir
+      size: 14382487
+      nfiles: 2
+    - path: reports/training/mobilenetv2_finetuned
+      hash: md5
+      md5: 85909a96e0eda1c5612c903b444c81f0.dir
+      size: 256317
+      nfiles: 13
+  compare_models:
+    cmd: python -m scripts.compare_models
+    deps:
+    - path: reports/training/cnn_baseline/metrics.json
+      hash: md5
+      md5: 3a1d5c847b6bb5d27463bd4795ecc45e
+      size: 344
+    - path: reports/training/cnn_baseline/run.json
+      hash: md5
+      md5: e6b26542fbdf53021dfd9f51a74f8411
+      size: 874
+    - path: reports/training/mobilenetv2_finetuned/metrics.json
+      hash: md5
+      md5: 5082aa05a39cd200677e9419525b1c1e
+      size: 425
+    - path: reports/training/mobilenetv2_finetuned/run.json
+      hash: md5
+      md5: 82ddac0b9ee08f92a8272ff798293480
+      size: 923
+    - path: reports/training/mobilenetv2_frozen/metrics.json
+      hash: md5
+      md5: 6f00e8e0eeb15a1ef04f04b59ca3688d
+      size: 409
+    - path: reports/training/mobilenetv2_frozen/run.json
+      hash: md5
+      md5: 0d57117b1badbe298b12961c5b987556
+      size: 756
+    - path: scripts/compare_models.py
+      hash: md5
+      md5: 5a01cee713d7494505d0aceb0a2edea1
+      size: 1893
+    - path: visionguard/transfer_reporting.py
+      hash: md5
+      md5: 3613f2a3e4cf4b1cbafd1d3e7a14b07f
+      size: 7350
+    outs:
+    - path: reports/training/model_comparison.csv
+      hash: md5
+      md5: a898e46f0b2a728bd7a25049a64b3492
+      size: 712
+    - path: reports/training/model_comparison.json
+      hash: md5
+      md5: 776dd009b78ccb09b5874bdd5fc0d50f
+      size: 2425
+    - path: reports/training/model_comparison.md
+      hash: md5
+      md5: 3b36b696cc56c291ec08f24541476789
+      size: 1353

@@ -1,0 +1,11 @@
+{
+  "trainable_backbone_layers": [
+    "block_16_expand",
+    "block_16_depthwise",
+    "block_16_project"
+  ],
+  "trainable_parameters": 551489,
+  "total_parameters": 2340033,
+  "batchnorm_training_mode": false,
+  "final_projection_trainable": false
+}
