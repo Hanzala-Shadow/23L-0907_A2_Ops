@@ -1,0 +1,15 @@
+{
+  "format": "tflite-float32",
+  "source_model_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+  "model_sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+  "policy_sha256": "2857f8dec854ddc1c7581a859f4e706612c1988a8ebca9563623fd0f0d45fa21",
+  "model_bytes": 9194268,
+  "threshold": 0.6196606457233429,
+  "validation_images": 146,
+  "maximum_absolute_probability_error": 8.225440979003906e-06,
+  "mean_absolute_probability_error": 9.338298895434566e-07,
+  "changed_validation_decisions": 0,
+  "test_set_used": false,
+  "tensorflow_version": "2.19.1",
+  "free_disk_gib_after_export": 2.937816619873047
+}

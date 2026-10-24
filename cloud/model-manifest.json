@@ -1,0 +1,9 @@
+{
+  "source_model_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+  "model_sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+  "policy_sha256": "2857f8dec854ddc1c7581a859f4e706612c1988a8ebca9563623fd0f0d45fa21",
+  "format": "tflite-float32",
+  "threshold": 0.6196606457233429,
+  "bundle_sha256": "54ec4e109e45d6e5449e8f3a48ec49293735a91be92b79748a95dccf2700d2a7",
+  "bundle_bytes": 8523658
+}

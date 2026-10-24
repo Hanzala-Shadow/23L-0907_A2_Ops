@@ -1,0 +1,6 @@
+outs:
+- md5: d2667ee80a50746f1b7d837792c479d9.dir
+  size: 9194941
+  nfiles: 2
+  hash: md5
+  path: cloud-api

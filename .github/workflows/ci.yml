@@ -47,8 +47,8 @@ jobs:
           python -m pip check
       - name: Lint and format
         run: |
-          python -m ruff check scripts visionguard tests docker wsgi.py gunicorn.conf.py
-          python -m ruff format --check scripts visionguard tests docker wsgi.py gunicorn.conf.py
+          python -m ruff check scripts visionguard tests docker cloud wsgi.py gunicorn.conf.py
+          python -m ruff format --check scripts visionguard tests docker cloud wsgi.py gunicorn.conf.py
       - name: Run synthetic tests
         run: |
           python scripts/check_disk.py --minimum-free-gib 2

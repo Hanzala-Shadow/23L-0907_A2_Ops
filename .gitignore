@@ -12,6 +12,7 @@ __pycache__/
 .dvc-storage/
 models/*
 !models/champion.dvc
+!models/cloud-api.dvc
 mlruns/
 mlartifacts/
 *.db

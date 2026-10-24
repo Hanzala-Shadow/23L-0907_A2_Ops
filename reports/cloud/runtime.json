@@ -1,0 +1,13 @@
+{
+  "runtime": "ai-edge-litert==2.3.0",
+  "validation_uploads": 146,
+  "classified_validation_images": 131,
+  "rejected_over_limit_images": 11,
+  "rejected_format_mismatches": 4,
+  "maximum_absolute_probability_error": 8.463859558105469e-06,
+  "changed_validation_decisions": 0,
+  "peak_process_rss_mib": 179.3125,
+  "free_disk_gib": 2.698566436767578,
+  "test_set_used": false,
+  "tensorflow_imported": false
+}

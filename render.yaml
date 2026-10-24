@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: 23l-0907-a2-ops-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeployTrigger: 'off'
+    buildCommand: >-
+      pip install --no-cache-dir --no-compile --only-binary=:all: -r requirements/cloud.lock
+      && python scripts/fetch_cloud_model.py
+    startCommand: gunicorn --config cloud/gunicorn.conf.py cloud.wsgi:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.15
+      - key: PYTHONDONTWRITEBYTECODE
+        value: '1'
+      - key: OPENBLAS_NUM_THREADS
+        value: '1'
+      - key: OMP_NUM_THREADS
+        value: '1'
+      - key: MODEL_API_KEY
+        sync: false
+      - key: MODEL_BUNDLE_URL
+        sync: false
