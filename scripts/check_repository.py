@@ -50,6 +50,7 @@ TEXT_SUFFIXES = {
     ".css",
     ".js",
     ".lock",
+    ".ini",
 }
 
 

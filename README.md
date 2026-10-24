@@ -1,5 +1,7 @@
 # 23L-0907_A2_Ops
 
+[![CI](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/workflows/ci.yml)
+
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
 contains dataset download, audit, deduplication, split preparation, CPU training
 pipelines, and a Flask image classifier with PostgreSQL history and a Docker
@@ -18,6 +20,8 @@ validation, saved results, history and health checks. Start PostgreSQL with
 `gunicorn --config gunicorn.conf.py wsgi:app` in the configured environment.
 The [Docker guide](docs/docker.md) covers the guarded image build and Compose
 stack, reusing the champion model and persistent PostgreSQL history.
+The [GitHub Actions guide](docs/ci.md) describes automated linting, tests, Docker
+build checks and an isolated Compose integration check on hosted runners.
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private

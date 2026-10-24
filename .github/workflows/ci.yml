@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  CUDA_VISIBLE_DEVICES: '-1'
+  TF_CPP_MIN_LOG_LEVEL: '2'
+  TF_NUM_INTRAOP_THREADS: '2'
+  TF_NUM_INTEROP_THREADS: '1'
+  TF_ENABLE_ONEDNN_OPTS: '0'
+  OMP_NUM_THREADS: '2'
+  OPENBLAS_NUM_THREADS: '2'
+
+jobs:
+  tests:
+    name: Lint and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Check repository content
+        run: python scripts/check_repository.py --history
+      - name: Install pinned test dependencies
+        run: |
+          python -m pip install --no-cache-dir --no-compile --only-binary=:all: -r requirements/ci.lock
+          python -m pip check
+      - name: Lint and format
+        run: |
+          python -m ruff check scripts visionguard tests docker wsgi.py gunicorn.conf.py
+          python -m ruff format --check scripts visionguard tests docker wsgi.py gunicorn.conf.py
+      - name: Run synthetic tests
+        run: |
+          python scripts/check_disk.py --minimum-free-gib 2
+          python -m pytest -q --junitxml=reports/training-runtime/ci/pytest.xml
+      - name: Save test report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unit-test-results
+          path: reports/training-runtime/ci/pytest.xml
+          retention-days: 1
+          if-no-files-found: ignore
+
+  docker:
+    name: Docker build and Compose checks
+    needs: tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      POSTGRES_VOLUME_NAME: visionguard-ci-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Prepare isolated test settings
+        run: |
+          python scripts/ci_fixture.py settings --output .env
+          python scripts/check_disk.py --minimum-free-gib 8
+          docker compose -p visionguard-ci config --quiet
+      - name: Validate Dockerfile
+        run: docker buildx build --check --build-arg BUILDKIT_DOCKERFILE_CHECK=error=true .
+      - name: Build serving image
+        run: docker buildx build --load --progress plain --tag visionguard:local .
+      - name: Create synthetic model fixture
+        run: |
+          mkdir -p models/champion
+          docker run --rm --network none --read-only --tmpfs /tmp:size=128m \
+            --user "$(id -u):$(id -g)" --env PYTHONPATH=/app \
+            --mount "type=bind,source=$PWD/models/champion,target=/bundle" \
+            --mount "type=bind,source=$PWD/scripts/ci_fixture.py,target=/checks/ci_fixture.py,readonly" \
+            --entrypoint python visionguard:local \
+            /checks/ci_fixture.py model --output /bundle
+      - name: Start Compose and test uploads
+        run: |
+          docker volume create "$POSTGRES_VOLUME_NAME"
+          docker compose -p visionguard-ci up -d --no-build --wait --wait-timeout 120
+          python scripts/ci_smoke.py
+      - name: Check history after container recreation
+        run: |
+          docker compose -p visionguard-ci down
+          docker compose -p visionguard-ci up -d --no-build --wait --wait-timeout 120
+          python scripts/ci_smoke.py --verify-only
+          python scripts/check_disk.py --minimum-free-gib 2
+      - name: Print service logs on failure
+        if: failure()
+        run: docker compose -p visionguard-ci logs --no-color --tail 80
+      - name: Save container check report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: docker-check-results
+          path: reports/training-runtime/ci/docker-smoke.json
+          retention-days: 1
+          if-no-files-found: ignore
+      - name: Remove isolated test services
+        if: always()
+        run: |
+          if [ -f .env ]; then
+            docker compose -p visionguard-ci down --remove-orphans
+          fi
+          if docker volume inspect "$POSTGRES_VOLUME_NAME" >/dev/null 2>&1; then
+            docker volume rm "$POSTGRES_VOLUME_NAME"
+          fi
