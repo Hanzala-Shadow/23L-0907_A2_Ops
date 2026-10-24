@@ -1,0 +1,13 @@
+{
+  "source_commit": "c7084ecc87054b083f44b92a97c03528160f219a",
+  "image_id": "sha256:15db841bff7420643b049710475b9c0e2716611394bafa1c2665932e9278a2f5",
+  "image_size_bytes": 190435628,
+  "compressed_image_bytes": 69958755,
+  "start_free_gib": 2.6600570678710938,
+  "minimum_observed_free_gib": 2.4228782653808594,
+  "end_free_gib": 2.4228782653808594,
+  "checksum_verified": true,
+  "required_reserve_gib": 2,
+  "archive_sha256": "4f45625968a3f95379f6ec18a1a49ba3b3cd7aaee08ca94975044398cfdb1213",
+  "downloaded_archive_removed_after_import": true
+}

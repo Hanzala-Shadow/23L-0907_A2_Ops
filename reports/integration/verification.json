@@ -1,0 +1,74 @@
+{
+  "checked_at_utc": "2026-10-24T19:06:45.253150+00:00",
+  "local_url": "http://127.0.0.1:5000",
+  "inference_backend": "vercel",
+  "cloud_url": "https://23l-0907-a2-ops-api.vercel.app",
+  "health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 2.425,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "backend": "vercel",
+      "error_code": null,
+      "loaded": false,
+      "name": "23L-0907_A2_Ops",
+      "status": "ok",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "live_requests": [
+    {
+      "filename": "integration-red.png",
+      "http_status": 201,
+      "result_id": "bd0df5fa-9ce8-45ae-aa1a-c96fe8c54b73"
+    },
+    {
+      "filename": "integration-blue.png",
+      "http_status": 201,
+      "result_id": "8293f7a9-04ea-427b-96ab-6ca864a7155b"
+    },
+    {
+      "filename": "integration-white.png",
+      "http_status": 201,
+      "result_id": "f0d99b99-f052-47ee-8f29-5f591730ac91"
+    },
+    {
+      "filename": "integration-invalid.txt",
+      "http_status": 415,
+      "result_id": "bbafe98b-4519-46a9-a48d-909b70a6d927"
+    },
+    {
+      "filename": "integration-pixel-limit.png",
+      "http_status": 413,
+      "result_id": "ce1ae1a3-8485-4fbe-a0b6-3cf52272af7b"
+    }
+  ],
+  "isolated_postgresql_fault_checks": [
+    {
+      "case": "timeout",
+      "http_status": 504,
+      "error_code": "cloud_timeout",
+      "result_id": "237255f8-35de-4947-8edb-28a5e997871e"
+    },
+    {
+      "case": "network",
+      "http_status": 503,
+      "error_code": "cloud_unavailable",
+      "result_id": "ce5badb9-0d08-47d2-9c9f-8e6b9c936b3e"
+    }
+  ],
+  "original_rows_preserved": 11,
+  "history_rows_after_checks": 18,
+  "native_champion_unchanged": true,
+  "free_disk_gib": 2.4252853393554688,
+  "dataset_images_uploaded": false,
+  "test_set_used": false
+}

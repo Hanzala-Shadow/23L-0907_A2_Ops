@@ -1,0 +1,53 @@
+{
+  "checked_at_utc": "2026-10-24T19:14:57.214227+00:00",
+  "local_url": "http://127.0.0.1:5000",
+  "original_rows_preserved": 11,
+  "history_rows_after_browser_check": 19,
+  "browser_upload": {
+    "result_id": "4e9565ca-536d-40f9-820a-bb2a1a7074e5",
+    "status": "success",
+    "model_sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+    "threshold": 0.6196606457233429,
+    "matches_local_reference": true
+  },
+  "database_container_preserved": true,
+  "postgresql_volume": "23l-0907_a2_ops_postgres_data",
+  "database_and_session_settings_preserved": true,
+  "secret_files_mode": "0600",
+  "native_champion_unchanged": true,
+  "native_image_retained": true,
+  "client_image_id": "sha256:15db841bff7420643b049710475b9c0e2716611394bafa1c2665932e9278a2f5",
+  "client_image_source_commit": "c7084ecc87054b083f44b92a97c03528160f219a",
+  "client_runs_as_non_root": true,
+  "client_root_filesystem_read_only": true,
+  "champion_mount_read_only": true,
+  "local_bind_address": "127.0.0.1:5000",
+  "connect_timeout_seconds": 3.0,
+  "read_timeout_seconds": 45.0,
+  "source_ci_url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40123125383",
+  "health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 2.482,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "backend": "vercel",
+      "error_code": null,
+      "loaded": false,
+      "name": "23L-0907_A2_Ops",
+      "status": "ok",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "free_disk_gib": 2.4815444946289062,
+  "required_reserve_gib": 2,
+  "dataset_images_uploaded": false,
+  "test_set_used": false
+}

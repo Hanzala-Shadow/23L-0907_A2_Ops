@@ -96,6 +96,22 @@ The live check sends generated images through localhost to Vercel and
 independently reads PostgreSQL. It does not upload dataset images or read the
 held-out test set.
 
+On this machine, `scripts/check_integration.py` uses the ignored pre-change
+snapshot at `reports/training-runtime/integration/before.json` and the existing
+isolated LiteRT environment to compare saved predictions with local inference.
+Running it creates seven verification records, including two simulated failure
+records in PostgreSQL. Run it only when those extra history entries are wanted:
+
+```bash
+.venv/bin/python scripts/check_integration.py
+```
+
+The completed checks are recorded in `reports/integration/verification.json`.
+`reports/integration/final.json` also records the browser upload, preserved
+database and champion, active client image, and remaining disk space. All 11
+original records were preserved; verification added eight records in total.
+The downloaded image archive was removed after the verified image was loaded.
+
 To deliberately return to native inference, use the retained TensorFlow image
 with only `compose.yaml` and `INFERENCE_BACKEND=local`. Preserve the external
 PostgreSQL volume and the existing database/session secrets.
