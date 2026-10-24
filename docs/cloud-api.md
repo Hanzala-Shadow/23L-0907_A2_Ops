@@ -36,8 +36,8 @@ both contained files. Prepare a short-lived model-only download URL:
 ```
 
 This writes `.env.cloud` with mode 0600. Keep this file local. The signed URL
-expires in about one hour and grants download access only to that release
-asset. The GitHub account token and DagsHub credentials stay on this machine.
+has a short-lived embedded download token and grants download access only to
+that release asset. Refresh it immediately before each build. The GitHub account token and DagsHub credentials stay on this machine.
 
 ## Vercel Hobby deployment
 
@@ -48,8 +48,9 @@ checks. The Python bundle stays below Vercel's 500 MB limit. Inference loads
 once per warm function instance; scale-out or a cold start creates another
 independent instance. Uploaded images and history are not stored in the API.
 
-`pyproject.toml` points Vercel at `cloud.wsgi:app`; `requirements.txt` includes
-the pinned lightweight runtime. `vercel.json` downloads and verifies the model
+`pyproject.toml` points Vercel at `cloud.wsgi:app` and declares the same pinned
+runtime as `requirements/cloud.lock`. Vercel prioritizes this dependency manifest
+over `requirements.txt`. `vercel.json` downloads and verifies the model
 during the cloud build and includes it in the function bundle. The API needs
 no database connection, TensorFlow installation, or training credentials.
 

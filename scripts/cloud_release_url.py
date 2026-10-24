@@ -1,11 +1,13 @@
 """Prepare a short-lived, model-only release download for a manual deployment."""
 
+import base64
 import json
 import os
 import secrets
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import requests
 from dotenv import dotenv_values, set_key
@@ -59,7 +61,16 @@ def main():
     if not values.get("MODEL_API_KEY"):
         set_key(path, "MODEL_API_KEY", secrets.token_urlsafe(32))
     print("Saved signed model download URL and API key in .env.cloud (mode 0600)")
-    print("The URL expires in about one hour; refresh it before each cloud build")
+    jwt = parse_qs(urlsplit(url).query).get("jwt", [""])[0]
+    payload = jwt.split(".")[1]
+    expires = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))[
+        "exp"
+    ]
+    print(
+        "Signed download token expires at "
+        + datetime.fromtimestamp(expires, UTC).isoformat()
+    )
+    print("Refresh the URL immediately before each cloud build")
 
 
 if __name__ == "__main__":

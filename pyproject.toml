@@ -2,6 +2,26 @@
 name = "23l-0907-a2-ops-api"
 version = "1.0.0"
 requires-python = ">=3.12,<3.13"
+dependencies = [
+  "ai-edge-litert==2.3.0",
+  "backports-strenum==1.2.8",
+  "blinker==1.9.0",
+  "click==8.5.0",
+  "flask==3.1.3",
+  "flatbuffers==25.12.19",
+  "gunicorn==23.0.0",
+  "itsdangerous==2.2.0",
+  "jinja2==3.1.6",
+  "markupsafe==3.0.4",
+  "ml-dtypes==0.6.0",
+  "numpy==2.1.3",
+  "packaging==24.2",
+  "pillow==12.3.0",
+  "protobuf==5.29.6",
+  "tqdm==4.70.1",
+  "typing-extensions==4.16.0",
+  "werkzeug==3.1.9",
+]
 
 [tool.vercel]
 entrypoint = "cloud.wsgi:app"
