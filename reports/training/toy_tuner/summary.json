@@ -1,0 +1,66 @@
+{
+  "best": {
+    "trial_id": "2",
+    "learning_rate": 0.01,
+    "units": 64,
+    "validation_loss": 0.24696220457553864,
+    "validation_accuracy": 0.9150000214576721,
+    "best_epoch": 2,
+    "epochs_completed": 3,
+    "run_id": "15bb7ded35284cc19c2f88395785f895",
+    "git_commit": "af39547bfa5ec3fbb22bb9fd0875e136c6d09aae",
+    "test_evaluated": false
+  },
+  "trials": [
+    {
+      "trial_id": "0",
+      "learning_rate": 0.01,
+      "units": 32,
+      "validation_loss": 0.31449443101882935,
+      "validation_accuracy": 0.8999999761581421,
+      "best_epoch": 3,
+      "epochs_completed": 3,
+      "run_id": "44d963721344411cb7a8d278561d86eb",
+      "git_commit": "af39547bfa5ec3fbb22bb9fd0875e136c6d09aae",
+      "test_evaluated": false
+    },
+    {
+      "trial_id": "1",
+      "learning_rate": 0.001,
+      "units": 32,
+      "validation_loss": 0.4416131377220154,
+      "validation_accuracy": 0.8840000033378601,
+      "best_epoch": 3,
+      "epochs_completed": 3,
+      "run_id": "a340313c4133499da3ec999a815ee563",
+      "git_commit": "af39547bfa5ec3fbb22bb9fd0875e136c6d09aae",
+      "test_evaluated": false
+    },
+    {
+      "trial_id": "2",
+      "learning_rate": 0.01,
+      "units": 64,
+      "validation_loss": 0.24696220457553864,
+      "validation_accuracy": 0.9150000214576721,
+      "best_epoch": 2,
+      "epochs_completed": 3,
+      "run_id": "15bb7ded35284cc19c2f88395785f895",
+      "git_commit": "af39547bfa5ec3fbb22bb9fd0875e136c6d09aae",
+      "test_evaluated": false
+    },
+    {
+      "trial_id": "3",
+      "learning_rate": 0.001,
+      "units": 64,
+      "validation_loss": 0.37649697065353394,
+      "validation_accuracy": 0.8960000276565552,
+      "best_epoch": 3,
+      "epochs_completed": 3,
+      "run_id": "60406cd2c202466bb7d14daf89cb9abe",
+      "git_commit": "af39547bfa5ec3fbb22bb9fd0875e136c6d09aae",
+      "test_evaluated": false
+    }
+  ],
+  "completed_trials": 4,
+  "test_evaluated": false
+}

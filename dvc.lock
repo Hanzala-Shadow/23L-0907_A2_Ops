@@ -339,3 +339,164 @@ stages:
       hash: md5
       md5: 3b36b696cc56c291ec08f24541476789
       size: 1353
+  tune_mobilenet:
+    cmd: python -m scripts.tune_mobilenet
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: b2cec67839f742df4653f66d4bcbbafb.dir
+      size: 503783378
+      nfiles: 975
+    - path: data/splits
+      hash: md5
+      md5: 97515564759d6584cc1acdc8bd30fe93.dir
+      size: 131561
+      nfiles: 5
+    - path: models/mobilenetv2_frozen
+      hash: md5
+      md5: 2e084cf06c0dd2d9bb902fc66a4a55b0.dir
+      size: 10630799
+      nfiles: 2
+    - path: reports/data/image_manifest.csv
+      hash: md5
+      md5: fae4a0ca90a49528226e966b0171d580
+      size: 184433
+    - path: reports/training/cnn_baseline/metrics.json
+      hash: md5
+      md5: 3a1d5c847b6bb5d27463bd4795ecc45e
+      size: 344
+    - path: reports/training/cnn_baseline/run.json
+      hash: md5
+      md5: e6b26542fbdf53021dfd9f51a74f8411
+      size: 874
+    - path: reports/training/cnn_baseline/validation_predictions.csv
+      hash: md5
+      md5: 467f9d72fcec2d5ed33b2dbd85f5d129
+      size: 11753
+    - path: reports/training/mobilenetv2_finetuned/metrics.json
+      hash: md5
+      md5: 5082aa05a39cd200677e9419525b1c1e
+      size: 425
+    - path: reports/training/mobilenetv2_finetuned/run.json
+      hash: md5
+      md5: 82ddac0b9ee08f92a8272ff798293480
+      size: 923
+    - path: reports/training/mobilenetv2_finetuned/validation_predictions.csv
+      hash: md5
+      md5: c902c62a673b480ac20e93db01cad42c
+      size: 11737
+    - path: reports/training/mobilenetv2_frozen/metrics.json
+      hash: md5
+      md5: 6f00e8e0eeb15a1ef04f04b59ca3688d
+      size: 409
+    - path: reports/training/mobilenetv2_frozen/run.json
+      hash: md5
+      md5: 0d57117b1badbe298b12961c5b987556
+      size: 756
+    - path: reports/training/mobilenetv2_frozen/validation_predictions.csv
+      hash: md5
+      md5: 570d748f3b29a29c2b1e441466b8f666
+      size: 11732
+    - path: requirements/locked.txt
+      hash: md5
+      md5: 454e5ab9b4396d41a771946c973aea11
+      size: 3833
+    - path: scripts/prepare_splits.py
+      hash: md5
+      md5: d881854b13eed441d80217ddad336b5f
+      size: 9613
+    - path: scripts/train_cnn.py
+      hash: md5
+      md5: d29680b23e7f3c97c2b708b7fffc0842
+      size: 17049
+    - path: scripts/tune_mobilenet.py
+      hash: md5
+      md5: ddd75cadfe0503826cc822fd47b2206a
+      size: 19909
+    - path: visionguard/__init__.py
+      hash: md5
+      md5: abe17b248b193886ba74b36d03befa4f
+      size: 51
+    - path: visionguard/cnn.py
+      hash: md5
+      md5: 1bc466395d435434463e5e11e8547c99
+      size: 2157
+    - path: visionguard/pipeline.py
+      hash: md5
+      md5: 8c1bca4ff24bbc63b207e8a76db4b06d
+      size: 2840
+    - path: visionguard/preprocessing.py
+      hash: md5
+      md5: d5762acc6bbffd3126c6de87602d2138
+      size: 1369
+    - path: visionguard/transfer.py
+      hash: md5
+      md5: 0b4aa44a321961aa66b7eb9cb355251e
+      size: 3708
+    - path: visionguard/transfer_reporting.py
+      hash: md5
+      md5: 3613f2a3e4cf4b1cbafd1d3e7a14b07f
+      size: 7350
+    - path: visionguard/tuning.py
+      hash: md5
+      md5: 44363b30e16980c6df69db1844b11485
+      size: 3613
+    params:
+      params.json:
+        preprocessing:
+          policy: rgb-white-letterbox-v1
+          image_size: 128
+          batch_size: 16
+          cache_in_memory: true
+        tuning:
+          seed: 42
+          max_trials: 8
+          epochs: 6
+          early_stopping_patience: 2
+          lr_patience: 1
+          learning_rate:
+          - 1e-05
+          - 0.0001
+          dropout:
+          - 0.2
+          - 0.5
+          unfrozen_layers:
+          - 1
+          - 3
+    outs:
+    - path: models/mobilenetv2_tuned
+      hash: md5
+      md5: b719c3cf2de5916f26c76ab3fe71eeea.dir
+      size: 14382221
+      nfiles: 2
+    - path: reports/training/keras_tuner
+      hash: md5
+      md5: dae69d89b1189d163ee46f8c55660c55.dir
+      size: 2043394
+      nfiles: 93
+  tune_toy:
+    cmd: python -m scripts.tune_toy
+    deps:
+    - path: requirements/locked.txt
+      hash: md5
+      md5: 454e5ab9b4396d41a771946c973aea11
+      size: 3833
+    - path: scripts/train_cnn.py
+      hash: md5
+      md5: d29680b23e7f3c97c2b708b7fffc0842
+      size: 17049
+    - path: scripts/tune_toy.py
+      hash: md5
+      md5: dcb54d0e8345eddae6a1b46d237d7712
+      size: 9993
+    outs:
+    - path: models/toy_mnist
+      hash: md5
+      md5: 7e93b4e4cba8df6486b3957a987fd643.dir
+      size: 636161
+      nfiles: 1
+    - path: reports/training/toy_tuner
+      hash: md5
+      md5: e4f28d4eeb50e260aff5ed5dd70f9ba3.dir
+      size: 5567
+      nfiles: 11

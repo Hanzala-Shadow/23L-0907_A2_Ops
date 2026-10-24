@@ -1,0 +1,21 @@
+{
+  "dataset": "MNIST training partition",
+  "source_url": "https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz",
+  "source_sha256": "731c5ac602752760c8e48fbffcf8c3b850d9dc2a2aedcf2cc48468fc17b673d1",
+  "seed": 42,
+  "train_images": 6000,
+  "validation_images": 1000,
+  "selected_indices_sha256": "f7f1e8ed113ff56d17a2ffb3f6af2b5208c248fc5712657cf1ab27fa6c185d53",
+  "learning_rate": [
+    0.001,
+    0.01
+  ],
+  "units": [
+    32,
+    64
+  ],
+  "max_trials": 4,
+  "epochs": 3,
+  "batch_size": 128,
+  "test_evaluated": false
+}

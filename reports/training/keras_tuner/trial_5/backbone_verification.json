@@ -1,0 +1,6 @@
+{
+  "changed_backbone_layers": [
+    "block_16_project"
+  ],
+  "frozen_weights_and_batchnorm_unchanged": true
+}

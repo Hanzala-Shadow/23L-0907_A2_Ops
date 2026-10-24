@@ -1,0 +1,12 @@
+{
+  "trial_id": "1",
+  "learning_rate": 0.001,
+  "units": 32,
+  "validation_loss": 0.4416131377220154,
+  "validation_accuracy": 0.8840000033378601,
+  "best_epoch": 3,
+  "epochs_completed": 3,
+  "run_id": "a340313c4133499da3ec999a815ee563",
+  "git_commit": "af39547bfa5ec3fbb22bb9fd0875e136c6d09aae",
+  "test_evaluated": false
+}

@@ -1,0 +1,16 @@
+{
+  "validation_loss": 0.5110390186309814,
+  "validation_accuracy": 0.7534246575342466,
+  "validation_precision": 0.7848101265822784,
+  "validation_recall": 0.7654320987654321,
+  "validation_f1": 0.775,
+  "validation_roc_auc": 0.8389363722697055,
+  "best_epoch": 2,
+  "epochs_completed": 4,
+  "training_seconds": 60.8948343200027,
+  "best_epoch_training_loss": 0.3183754086494446,
+  "last_validation_loss": 0.5175246000289917,
+  "parameters": 2340033,
+  "trainable_parameters": 389249,
+  "threshold": 0.5
+}

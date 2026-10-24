@@ -1,0 +1,37 @@
+{
+  "validation_loss": 0.5125776529312134,
+  "validation_accuracy": 0.7465753424657534,
+  "validation_precision": 0.782051282051282,
+  "validation_recall": 0.7530864197530864,
+  "validation_f1": 0.7672955974842768,
+  "validation_roc_auc": 0.839696106362773,
+  "best_epoch": 2,
+  "epochs_completed": 4,
+  "training_seconds": 68.22340291300134,
+  "best_epoch_training_loss": 0.3136196732521057,
+  "last_validation_loss": 0.5178535580635071,
+  "parameters": 2340033,
+  "trainable_parameters": 551489,
+  "threshold": 0.5,
+  "initialized_from_run_id": "30e0c29830cf47509601dd80fbe38b39",
+  "initialized_from_model_sha256": "ac745383244fb23a755cd5de9133b5ba473b651dcaccf3149fbe9139ea47347c",
+  "trial_id": "4",
+  "hyperparameters": {
+    "learning_rate": 1e-05,
+    "dropout": 0.2,
+    "unfrozen_layers": 3
+  },
+  "run_id": "d1b5ff9d31ac4d0aa1c8a4278b184029",
+  "experiment_id": "0",
+  "run_url": "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops/experiments/#/experiments/0/runs/d1b5ff9d31ac4d0aa1c8a4278b184029",
+  "git_commit": "2999b5421a62d36956ef21a9c984a01c809b8559",
+  "data_fingerprint": "ccf9e412522a4da9cb0f9b8d01c5f9e27ba44b30118e3c9f731b21e5d6b2d793",
+  "dvc_raw_md5": "b2cec67839f742df4653f66d4bcbbafb.dir",
+  "split_counts": {
+    "train": 681,
+    "validation": 146
+  },
+  "model_sha256": "74e42d03f98eb9948337db188d71d787710ad0283dd6e72fd2b457a113f3c4b7",
+  "test_evaluated": false,
+  "minimum_free_gib_observed": 5.760993957519531
+}

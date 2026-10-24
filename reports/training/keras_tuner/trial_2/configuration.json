@@ -1,0 +1,47 @@
+{
+  "hyperparameters": {
+    "learning_rate": 1e-05,
+    "dropout": 0.5,
+    "unfrozen_layers": 3
+  },
+  "search": {
+    "seed": 42,
+    "max_trials": 8,
+    "epochs": 6,
+    "early_stopping_patience": 2,
+    "lr_patience": 1,
+    "learning_rate": [
+      1e-05,
+      0.0001
+    ],
+    "dropout": [
+      0.2,
+      0.5
+    ],
+    "unfrozen_layers": [
+      1,
+      3
+    ]
+  },
+  "preprocessing": {
+    "policy": "rgb-white-letterbox-v1",
+    "image_size": 128,
+    "batch_size": 16,
+    "cache_in_memory": true
+  },
+  "label_mapping": {
+    "real": 0,
+    "ai_generated": 1
+  },
+  "input_dtype": "uint8",
+  "normalization": "pixel / 127.5 - 1 inside model",
+  "trainable_backbone_layers": [
+    "block_16_expand",
+    "block_16_depthwise",
+    "block_16_project"
+  ],
+  "batchnorm_training_mode": false,
+  "test_evaluated": false,
+  "initialized_from_run_id": "30e0c29830cf47509601dd80fbe38b39",
+  "initialized_from_model_sha256": "ac745383244fb23a755cd5de9133b5ba473b651dcaccf3149fbe9139ea47347c"
+}
