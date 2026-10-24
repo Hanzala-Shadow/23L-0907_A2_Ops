@@ -1,0 +1,50 @@
+name: Public API verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postman:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Prepare generated inputs
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+        run: |
+          python -m pip install --no-cache-dir --no-compile pillow==12.3.0
+          python scripts/postman_fixtures.py
+      - name: Install official Postman CLI
+        run: |
+          mkdir -p "$RUNNER_TEMP/postman"
+          curl --fail --silent --show-error --location --retry 2 https://dl-cli.pstmn.io/download/latest/linux64 -o "$RUNNER_TEMP/postman.tar.gz"
+          tar -xzf "$RUNNER_TEMP/postman.tar.gz" -C "$RUNNER_TEMP/postman"
+          "$RUNNER_TEMP/postman/postman-cli" --version
+      - name: Run Postman collection from another network
+        run: |
+          "$RUNNER_TEMP/postman/postman-cli" collection run postman/visionguard.postman_collection.json \
+            -e reports/training-runtime/postman/private.postman_environment.json \
+            --reporters cli,json --reporter-json-omitAllHeadersAndBody \
+            --reporter-json-export reports/training-runtime/postman/results.json
+      - name: Save credential-free result
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: postman-api-results
+          path: reports/training-runtime/postman/results.json
+          retention-days: 1
+          if-no-files-found: ignore
+      - name: Remove local runner secret
+        if: always()
+        run: rm -f reports/training-runtime/postman/private.postman_environment.json

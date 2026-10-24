@@ -1,0 +1,109 @@
+$ git init -b dvc-lab
+Initialized empty Git repository in /home/hanzala/mlops-a2/reports/training-runtime/labs/dvc/repository/.git/
+
+$ git config user.name Syed Muhammad Hanzala
+
+$ git config user.email 229363485+Hanzala-Shadow@users.noreply.github.com
+
+$ ./.venv/bin/dvc init
+Initialized DVC repository.
+
+You can now commit the changes to git.
+
+What's next?
+------------
+- Check out the documentation: <https://dvc.org/doc>
+- Get help and share ideas: <https://dvc.org/chat>
+- Star us on GitHub: <https://github.com/treeverse/dvc>
+
+$ ./.venv/bin/dvc remote add -d storage ../remote
+Setting 'storage' as a default remote.
+
+$ ./.venv/bin/dvc add examples.csv
+
+To track the changes with git, run:
+
+	git add examples.csv.dvc .gitignore
+
+To enable auto staging, run:
+
+	dvc config core.autostage true
+
+$ git add .dvc .dvcignore .gitignore examples.csv.dvc
+
+$ git commit -m Track the initial example data
+[dvc-lab (root-commit) 0a21a67] Track the initial example data
+ 5 files changed, 16 insertions(+)
+ create mode 100644 .dvc/.gitignore
+ create mode 100644 .dvc/config
+ create mode 100644 .dvcignore
+ create mode 100644 .gitignore
+ create mode 100644 examples.csv.dvc
+
+$ git rev-parse HEAD
+0a21a67dd5c2aec14e7fefdaf8230a37f6dc9fa6
+
+$ ./.venv/bin/dvc push
+1 file pushed
+
+$ ./.venv/bin/dvc add examples.csv
+
+To track the changes with git, run:
+
+	git add examples.csv.dvc
+
+To enable auto staging, run:
+
+	dvc config core.autostage true
+
+$ git add .dvc .dvcignore .gitignore examples.csv.dvc
+
+$ git commit -m Add a landscape example
+[dvc-lab d4e9e1e] Add a landscape example
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+$ git rev-parse HEAD
+d4e9e1e4bc6787180e8d0cb80e22cc027531c4f6
+
+$ ./.venv/bin/dvc push
+1 file pushed
+
+$ git remote add origin https://github.com/Hanzala-Shadow/23L-0907_A2_Ops.git
+
+$ git push origin dvc-lab
+remote:
+remote: Create a pull request for 'dvc-lab' on GitHub by visiting:
+remote:      https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/pull/new/dvc-lab
+remote:
+To https://github.com/Hanzala-Shadow/23L-0907_A2_Ops.git
+ * [new branch]      dvc-lab -> dvc-lab
+
+$ git checkout 0a21a67dd5c2aec14e7fefdaf8230a37f6dc9fa6
+Note: switching to '0a21a67dd5c2aec14e7fefdaf8230a37f6dc9fa6'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 0a21a67 Track the initial example data
+
+$ ./.venv/bin/dvc checkout
+M       examples.csv
+
+$ ./.venv/bin/dvc pull
+A       examples.csv
+1 file fetched and 1 file added
+
+$ ./.venv/bin/dvc status
+Data and pipelines are up to date.

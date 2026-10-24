@@ -1,0 +1,206 @@
+{
+  "info": {
+    "name": "23L-0907_A2_Ops API verification",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Generated images only. API key comes from a local environment and is never stored in this collection."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://23l-0907-a2-ops-api.vercel.app"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Champion ready', () => { const r=pm.response.json(); pm.expect(r.status).to.eql('ok'); pm.expect(r.model.version).to.eql('2'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Missing key rejected",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{base_url}}/predict",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "reports/training-runtime/postman/red.png"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generated red",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "url": "{{base_url}}/predict",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "reports/training-runtime/postman/red.png"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Pinned champion and threshold', () => { const r=pm.response.json(); pm.expect(r.model.sha256).to.eql('58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128'); pm.expect(r.threshold).to.eql(0.6196606457233429); pm.expect(r.image.width).to.eql(160); pm.expect(r.image.height).to.eql(96); });",
+              "pm.test('Consistent score and verdict', () => { const r=pm.response.json(); pm.expect(r.ai_probability).to.be.within(0,1); pm.expect(r.label).to.eql(r.ai_probability >= r.threshold ? 'ai_generated' : 'real'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generated blue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "url": "{{base_url}}/predict",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "reports/training-runtime/postman/blue.png"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Pinned champion and threshold', () => { const r=pm.response.json(); pm.expect(r.model.sha256).to.eql('58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128'); pm.expect(r.threshold).to.eql(0.6196606457233429); pm.expect(r.image.width).to.eql(160); pm.expect(r.image.height).to.eql(96); });",
+              "pm.test('Consistent score and verdict', () => { const r=pm.response.json(); pm.expect(r.ai_probability).to.be.within(0,1); pm.expect(r.label).to.eql(r.ai_probability >= r.threshold ? 'ai_generated' : 'real'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generated white",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "url": "{{base_url}}/predict",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "reports/training-runtime/postman/white.png"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Pinned champion and threshold', () => { const r=pm.response.json(); pm.expect(r.model.sha256).to.eql('58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128'); pm.expect(r.threshold).to.eql(0.6196606457233429); pm.expect(r.image.width).to.eql(160); pm.expect(r.image.height).to.eql(96); });",
+              "pm.test('Consistent score and verdict', () => { const r=pm.response.json(); pm.expect(r.ai_probability).to.be.within(0,1); pm.expect(r.label).to.eql(r.ai_probability >= r.threshold ? 'ai_generated' : 'real'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wrong file type rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "url": "{{base_url}}/predict",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "reports/training-runtime/postman/invalid.txt"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 415', () => pm.response.to.have.status(415));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "checked_at_utc": "2026-10-24T19:25:06.560345+00:00",
+  "branch": "dvc-lab",
+  "version_commits": [
+    "0a21a67dd5c2aec14e7fefdaf8230a37f6dc9fa6",
+    "d4e9e1e4bc6787180e8d0cb80e22cc027531c4f6"
+  ],
+  "restored_commit": "0a21a67dd5c2aec14e7fefdaf8230a37f6dc9fa6",
+  "restored_sha256": "7c65be95a83c56f7dc881fca4ec903cc3797fc569e7254a50f9b43c088f7d2e8",
+  "remote": "local folder outside the toy repository",
+  "local_workspace_and_cache_deleted_before_pull": true,
+  "restored_content_matches": true,
+  "status": "Data and pipelines are up to date.",
+  "pointer": "outs:\n- md5: 46bc404c9689a8c77064cf81aa0f39d2\n  size: 48\n  hash: md5\n  path: examples.csv\n",
+  "free_disk_gib": 2.470935821533203,
+  "production_data_changed": false
+}
