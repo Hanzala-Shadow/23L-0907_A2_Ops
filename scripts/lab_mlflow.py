@@ -1,5 +1,6 @@
 """Compare two tiny local MNIST runs, then repeat one on DagsHub."""
 
+import argparse
 import hashlib
 import json
 import os
@@ -14,12 +15,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--remote-only", action="store_true")
+    args = parser.parse_args()
     if shutil.disk_usage(ROOT).free < 2.25 * 1024**3:
         raise RuntimeError("Keep 2 GiB plus lab headroom")
     configure_cpu()
     from dotenv import load_dotenv
 
     load_dotenv(ROOT / ".env")
+    # set_tracking_uri updates the process environment. Preserve the cloud
+    # address before selecting a local backend.
+    cloud_uri = os.environ["MLFLOW_TRACKING_URI"]
+    assert cloud_uri.startswith("https://dagshub.com/")
     import matplotlib
 
     matplotlib.use("Agg")
@@ -50,11 +58,20 @@ def main():
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
     ).strip()
     records = []
+    if args.remote_only:
+        records = json.loads(
+            (ROOT / "reports/labs/mlflow/verification.json").read_text()
+        )["runs"][:2]
     mlflow.tensorflow.autolog(disable=True)
-    for location, rate in [("local", 0.001), ("local", 0.01), ("dagshub", 0.001)]:
+    choices = (
+        [("dagshub", 0.001)]
+        if args.remote_only
+        else [("local", 0.001), ("local", 0.01), ("dagshub", 0.001)]
+    )
+    for location, rate in choices:
         if shutil.disk_usage(ROOT).free < 2.125 * 1024**3:
             raise RuntimeError("Disk reserve reached")
-        uri = local_uri if location == "local" else os.environ["MLFLOW_TRACKING_URI"]
+        uri = local_uri if location == "local" else cloud_uri
         mlflow.set_tracking_uri(uri)
         name = (
             "23L-0907_A2_Ops" if location == "dagshub" else "23L-0907_A2_Ops-mlflow-lab"
