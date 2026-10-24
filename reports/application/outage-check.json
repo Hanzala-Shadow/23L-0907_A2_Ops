@@ -1,0 +1,41 @@
+{
+  "database_outage_http_status": 503,
+  "database_recovered_http_status": 200,
+  "model_worker_unchanged": true,
+  "outage_health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "unavailable"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 4.664,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "degraded"
+  },
+  "recovered_health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 4.665,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  }
+}

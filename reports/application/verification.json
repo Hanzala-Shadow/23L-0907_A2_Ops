@@ -1,0 +1,59 @@
+{
+  "checked_at_utc": "2026-10-24T16:52:48.172676+00:00",
+  "base_url": "http://127.0.0.1:5000",
+  "health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 4.665,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "requests": [
+    {
+      "id": "4a036a64-9337-49d7-b99e-be0023cc78e9",
+      "kind": "validation_image",
+      "source": "RealArt/RealArt/1010172.jpg",
+      "status": 201,
+      "ai_probability": 0.7347276210784912,
+      "label": "ai_generated"
+    },
+    {
+      "id": "afd62cec-8115-4822-929b-613d9b12c871",
+      "kind": "validation_image",
+      "source": "AiArtData/AiArtData/06as5rHi0sgG4W2Tq.png",
+      "status": 201,
+      "ai_probability": 0.9492709636688232,
+      "label": "ai_generated"
+    },
+    {
+      "id": "a8829abe-4390-4833-9269-e10259ba104a",
+      "kind": "rejected_upload",
+      "status": 415
+    },
+    {
+      "id": "94d2a91a-4777-4c18-914f-78a90651e8d7",
+      "kind": "rejected_upload",
+      "status": 400
+    },
+    {
+      "id": "7bd04101-6268-4ecf-a889-9a213361b57a",
+      "kind": "rejected_upload",
+      "status": 413
+    }
+  ],
+  "database_rows_verified": 5,
+  "test_images_used": false,
+  "persistence_check": false,
+  "free_after_gib": 4.665103912353516
+}

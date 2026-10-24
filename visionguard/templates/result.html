@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Saved result · VisionGuard{% endblock %}
+{% block content %}
+<div class="page-heading"><p class="eyebrow">Saved check</p><h1>Your image result</h1><p class="lead filename">{{ record.filename or 'No filename recorded' }}</p></div>
+{% if record.status == 'success' %}
+<section class="result-layout">
+  <div class="panel verdict-panel">
+    <p class="eyebrow">Model verdict</p>
+    <h2>{{ 'Likely AI-generated' if record.label == 'ai_generated' else 'Likely real' }}</h2>
+    <p class="score">{{ '%.1f'|format(record.confidence * 100) }}<span>%</span></p>
+    <p class="score-label">Model confidence</p>
+    <p class="small">An uncalibrated score for the selected class, not a guarantee.</p>
+  </div>
+  <div class="panel context-panel">
+    <h2>Read this with context</h2>
+    <p>The model compares visual patterns with its training data. It can make mistakes on both AI-generated and real images.</p>
+    <p>Use this result as one signal. It cannot verify an image’s source, editing history or authenticity.</p>
+    <dl class="summary-list"><div><dt>Checked</dt><dd>{{ record.created_at.strftime('%d %b %Y, %H:%M') }} UTC</dd></div><div><dt>Model version</dt><dd>{{ record.model_version }}</dd></div><div><dt>Processing time</dt><dd>{{ '%.0f'|format(record.processing_ms) }} ms</dd></div></dl>
+    <details><summary>Decision details</summary><dl class="summary-list"><div><dt>AI probability score</dt><dd>{{ '%.2f'|format(record.ai_probability * 100) }}%</dd></div><div><dt>AI decision threshold</dt><dd>{{ '%.2f'|format(record.threshold * 100) }}%</dd></div><div><dt>Model</dt><dd>{{ record.model_name }}</dd></div><div><dt>Preprocessing</dt><dd>{{ record.preprocessing_policy }}</dd></div></dl><p class="small">The saved decision policy favors avoiding false AI accusations. A “real” verdict can therefore have a class score below 50%.</p></details>
+  </div>
+</section>
+{% else %}
+<section class="panel"><p class="eyebrow">{{ record.status|capitalize }}</p><h2>This image was not classified</h2><p>{{ record.error_message }}</p><p class="small">This attempt was recorded in history. No image was retained.</p></section>
+{% endif %}
+<div class="actions"><a class="button" href="{{ url_for('upload') }}">Check another image</a><a class="text-link" href="{{ url_for('history') }}">View history</a></div>
+{% endblock %}

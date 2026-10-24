@@ -1,9 +1,9 @@
 # 23L-0907_A2_Ops
 
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
-contains dataset download, audit, deduplication, split preparation and CPU
-training pipelines for a custom CNN and MobileNetV2. The Flask application and
-deployment are later stages. An eight-trial Keras Tuner search varies learning
+contains dataset download, audit, deduplication, split preparation, CPU training
+pipelines, and a Flask image classifier with PostgreSQL history. Deployment is a
+later stage. An eight-trial Keras Tuner search varies learning
 rate, dropout and the number of unfrozen backbone layers; see
 [tuning instructions](docs/tuning.md) and [results](reports/training/tuning-results.md).
 
@@ -11,6 +11,11 @@ The final model, validation-derived threshold, single test evaluation and
 champion registry version are documented in the
 [final evaluation](reports/evaluation/README.md) and
 [selection workflow](docs/model-selection.md).
+
+The [Flask application guide](docs/web-app.md) covers local setup, upload
+validation, saved results, history and health checks. Start PostgreSQL with
+`docker compose -f compose.postgres.yaml up -d --wait`, then run
+`gunicorn --config gunicorn.conf.py wsgi:app` in the configured environment.
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private

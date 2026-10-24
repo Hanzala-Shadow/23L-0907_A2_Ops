@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Unable to complete this request · VisionGuard{% endblock %}
+{% block content %}
+<section class="panel error-panel"><p class="eyebrow">Request {{ status }}</p><h1>Let’s try that again.</h1><p class="lead" role="alert">{{ message }}</p>{% if record %}<p class="small">This attempt has been saved in history.</p>{% endif %}<div class="actions"><a class="button" href="{{ url_for('upload') }}">Back to upload</a>{% if record %}<a class="text-link" href="{{ url_for('result', result_id=record.id) }}">View saved attempt</a>{% endif %}</div></section>
+{% endblock %}

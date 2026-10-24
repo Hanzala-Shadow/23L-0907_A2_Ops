@@ -36,7 +36,20 @@ AGENT_TRAILER = re.compile(
     re.IGNORECASE,
 )
 PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")
-TEXT_SUFFIXES = {".py", ".md", ".txt", ".yaml", ".yml", ".json", ".toml", ".in", ".dvc"}
+TEXT_SUFFIXES = {
+    ".py",
+    ".md",
+    ".txt",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".toml",
+    ".in",
+    ".dvc",
+    ".html",
+    ".css",
+    ".js",
+}
 
 
 def git(*args):

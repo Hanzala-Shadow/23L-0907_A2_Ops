@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}History · VisionGuard{% endblock %}
+{% block content %}
+<div class="page-heading heading-row"><div><p class="eyebrow">A record of your checks</p><h1>History</h1><p class="lead">{{ total }} saved attempt{{ '' if total == 1 else 's' }}. Times are shown in UTC.</p></div><a class="button" href="{{ url_for('upload') }}">New check</a></div>
+<section class="panel history-panel">
+{% if records %}
+<div class="table-scroll"><table><caption class="visually-hidden">Saved classification attempts, newest first</caption><thead><tr><th scope="col">Date and time</th><th scope="col">Filename</th><th scope="col">Result</th><th scope="col">Confidence</th><th scope="col">Model</th><th scope="col">Details</th></tr></thead><tbody>
+{% for record in records %}<tr><td class="nowrap">{{ record.created_at.strftime('%d %b %Y') }}<span class="cell-sub">{{ record.created_at.strftime('%H:%M:%S') }} UTC</span></td><td class="filename">{{ record.filename or 'Not available' }}</td><td>{% if record.status == 'success' %}{{ 'Likely AI-generated' if record.label == 'ai_generated' else 'Likely real' }}{% else %}<span class="badge">{{ record.status|capitalize }}</span><span class="cell-sub">{{ record.error_message }}</span>{% endif %}</td><td>{{ ('%.1f%%'|format(record.confidence * 100)) if record.confidence is not none else '—' }}</td><td class="nowrap">Version {{ record.model_version }}</td><td><a class="text-link" href="{{ url_for('result', result_id=record.id) }}">View<span class="visually-hidden"> result for {{ record.filename or 'this attempt' }}</span></a></td></tr>{% endfor %}
+</tbody></table></div>
+<nav class="pagination" aria-label="History pages"><span>Page {{ page }} of {{ pages }}</span><div>{% if page > 1 %}<a href="{{ url_for('history', page=page - 1) }}">Previous</a>{% endif %}{% if page < pages %}<a href="{{ url_for('history', page=page + 1) }}">Next</a>{% endif %}</div></nav>
+{% else %}
+<div class="empty-state"><p class="eyebrow">Nothing here yet</p><h2>Your checks will appear here</h2><p>Start with one image. Its result will be saved without keeping the image.</p><a class="text-link" href="{{ url_for('upload') }}">Classify your first image</a></div>
+{% endif %}
+</section>
+{% endblock %}

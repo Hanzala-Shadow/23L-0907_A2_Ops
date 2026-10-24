@@ -1,0 +1,24 @@
+{
+  "entrypoint": "Flask CLI",
+  "debug": false,
+  "reloader": false,
+  "health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 4.664,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "temporary_server_stopped_after_check": true
+}
