@@ -29,9 +29,10 @@ constrained to 2.0 because MLflow 2.x is incompatible with SQLAlchemy 2.1.
 MLflow's declared TensorFlow range ends at 2.19.0; the installed 2.19.1 patch
 release passed these checks but emits a range warning.
 
-Copy `.env.example` to `.env` when configuring services. Keep credentials out of
-Git. The runtime dependency list is separate from development dependencies so
-the serving image will not include training and analysis tools.
+Use `.env.example` as a reference for local `.env` settings. Preserve existing
+credentials when adding service settings, and keep them out of Git. The runtime
+dependency list is separate from development dependencies so the serving image
+will not include training and analysis tools.
 
 ## Dataset
 

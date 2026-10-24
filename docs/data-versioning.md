@@ -133,10 +133,22 @@ dataset copy; split lists are small text files and do not duplicate images.
 
 Keep at least 2 GiB free. Before copying data, allow for both the expected new
 storage and a safety margin. Never prune unrelated Docker volumes, other
-projects or the DagsHub remote to make room. The temporary `.dvc-storage` backup
-can be removed only after the DagsHub upload and an independent restore are
-verified. A fresh restore with an empty cache needs about 1 GiB for the cache
-and workspace, in addition to the 2 GiB reserve and a safety margin.
+projects or the DagsHub remote to make room. A fresh restore with an empty cache
+needs about 1 GiB for the cache and workspace, in addition to the 2 GiB reserve
+and a safety margin.
+
+## Remote restore verification
+
+On 24 October 2026, a fresh GitHub clone with an empty cache restored all 981 DVC
+objects from DagsHub. SHA-256 checks matched all 975 original images and all five
+split files. The restored lists covered 974 unique images with no path or hash
+overlap between splits. DVC reported the cache and remote in sync.
+
+Free space stayed above 4.54 GiB during verification. The temporary clone was
+removed afterward. The initial `.dvc-storage` backup was checked against the
+cache and removed only after the remote restore passed, recovering about
+484 MiB of allocated space. The original images and local DVC cache remain
+available for training.
 
 Local command logs and restoration evidence are kept outside Git under
 `reports/versioning`. This directory is for terminal/report evidence and may
