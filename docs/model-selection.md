@@ -36,7 +36,10 @@ directory. Completed probabilities are saved atomically and checked by hash on
 reuse. Retrying reporting or uploads reuses them. An interrupted pass without
 durable probabilities is refused rather than silently repeated. Preserve this
 ledger. Final receipts and probabilities also belong in the committed evaluation
-report. Do not rerun selection or tune the threshold after viewing test results.
+report. A fresh checkout restores the ledger from those checked reports instead
+of repeating inference. If previously committed results are missing, evaluation
+refuses another pass. Do not rerun selection or tune the threshold after viewing
+test results.
 
 The frozen MobileNetV2 and selected tuned MobileNetV2 become separate versions of
 `23L-0907_A2_Ops` in the DagsHub MLflow registry. `champion` identifies the selected

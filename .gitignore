@@ -10,7 +10,8 @@ __pycache__/
 .dvc/cache/
 .dvc/tmp/
 .dvc-storage/
-models/
+models/*
+!models/champion.dvc
 mlruns/
 mlartifacts/
 *.db

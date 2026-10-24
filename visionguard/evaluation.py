@@ -1,5 +1,6 @@
 """Validation threshold selection and durable, single-pass test predictions."""
 
+import csv
 import hashlib
 import json
 import os
@@ -83,6 +84,21 @@ def choose_threshold(
     return selected, curve
 
 
+def save_test_predictions(path, rows, probabilities, threshold):
+    with Path(path).open("w", newline="") as target:
+        writer = csv.writer(target, lineterminator="\n")
+        writer.writerow(["relative_path", "label", "ai_probability", "predicted_label"])
+        for row, probability in zip(rows, probabilities, strict=True):
+            writer.writerow(
+                [
+                    row["relative_path"],
+                    row["label"],
+                    float(probability),
+                    int(probability >= threshold),
+                ]
+            )
+
+
 def atomic_json(path, value):
     path = Path(path)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -94,12 +110,34 @@ def atomic_json(path, value):
     temporary.replace(path)
 
 
-def predict_once(directory, identity, predict):
+def predict_once(directory, identity, predict, archived=None):
     """Reuse completed predictions; never repeat an interrupted/uncertain pass."""
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     started = directory / "started.json"
     complete = directory / "predictions.json"
+    if not complete.exists() and archived is not None:
+        archived = Path(archived)
+        receipt, predictions = archived / "receipt.json", archived / "predictions.csv"
+        if receipt.exists() or predictions.exists():
+            if not receipt.exists() or not predictions.exists():
+                raise RuntimeError(
+                    "Incomplete archived test results; refusing another pass"
+                )
+            saved = json.loads(receipt.read_text())
+            with predictions.open(newline="") as source:
+                saved["probabilities"] = [
+                    float(row["ai_probability"]) for row in csv.DictReader(source)
+                ]
+            encoded = json.dumps(saved["probabilities"], allow_nan=False).encode()
+            if (
+                saved["identity"] != identity
+                or hashlib.sha256(encoded).hexdigest() != saved["probabilities_sha256"]
+            ):
+                raise RuntimeError(
+                    "Archived test predictions failed their integrity check"
+                )
+            atomic_json(complete, saved)
     if complete.exists():
         saved = json.loads(complete.read_text())
         if saved["identity"] != identity:

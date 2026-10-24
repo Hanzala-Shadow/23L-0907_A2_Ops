@@ -54,7 +54,7 @@ def error_grid(output, rows, probabilities, threshold):
         if int(p >= threshold) != int(row["label"])
     ]
     chosen = errors[:10]
-    fig, axes = plt.subplots(2, 5, figsize=(15, 7))
+    fig, axes = plt.subplots(2, 5, figsize=(15, 8.5))
     examples = []
     for index, axis in enumerate(axes.flat):
         axis.axis("off")
@@ -77,7 +77,7 @@ def error_grid(output, rows, probabilities, threshold):
             }
         )
     fig.suptitle("Champion: first ten errors in the fixed test manifest")
-    fig.tight_layout()
+    fig.tight_layout(h_pad=3.0, pad=2.0, rect=(0, 0, 1, 0.96))
     fig.savefig(output / "misclassified_examples.png", dpi=140)
     plt.close(fig)
     write_json(output / "misclassified_examples.json", examples)
@@ -95,9 +95,13 @@ def main():
     import tensorflow as tf
 
     from scripts.prepare_splits import verify_source
-    from visionguard.evaluation import atomic_json, binary_metrics, predict_once
+    from visionguard.evaluation import (
+        atomic_json,
+        binary_metrics,
+        predict_once,
+        save_test_predictions,
+    )
     from visionguard.pipeline import make_dataset, read_split, verify_split_hash
-    from visionguard.transfer_reporting import save_predictions
 
     plan_path = ROOT / "reports/selection/plan.json"
     encoded = plan_path.read_bytes()
@@ -162,8 +166,29 @@ def main():
             check_space(ROOT)
             return result
 
-        probabilities, fresh = predict_once(ledger / role, identity, predict)
         folder = output / role
+        if (
+            not (ledger / role / "predictions.json").exists()
+            and not (folder / "receipt.json").exists()
+        ):
+            recorded = subprocess.run(
+                [
+                    "git",
+                    "cat-file",
+                    "-e",
+                    f"HEAD:reports/evaluation/{role}/receipt.json",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                check=False,
+            )
+            if recorded.returncode == 0:
+                raise RuntimeError(
+                    "Restore committed test predictions; refusing another inference pass"
+                )
+        probabilities, fresh = predict_once(
+            ledger / role, identity, predict, archived=folder
+        )
         folder.mkdir(parents=True, exist_ok=True)
         metrics = binary_metrics(
             labels,
@@ -173,7 +198,9 @@ def main():
             plan["policy"]["false_negative_cost"],
         )
         write_json(folder / "metrics.json", metrics)
-        save_predictions(folder / "predictions.csv", rows, probabilities)
+        save_test_predictions(
+            folder / "predictions.csv", rows, probabilities, model_record["threshold"]
+        )
         figures(
             folder,
             labels,

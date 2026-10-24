@@ -1,0 +1,45 @@
+{
+  "plan_sha256": "4a13976cefd0f19d19a8255395c69688e4ffdd75e89581098d8544c87dd56e1d",
+  "models": {
+    "cnn_baseline": {
+      "model": "cnn_baseline",
+      "run_id": "932b890056eb403aaefa21905070956d",
+      "loss": 0.7014916090725366,
+      "accuracy": 0.4013605442176871,
+      "precision": 0.23076923076923078,
+      "recall": 0.037037037037037035,
+      "f1": 0.06382978723404255,
+      "roc_auc": 0.4668911335578002,
+      "tn": 56,
+      "fp": 10,
+      "fn": 78,
+      "tp": 3,
+      "weighted_errors": 98,
+      "threshold": 0.47256049513816833,
+      "images": 147
+    },
+    "champion": {
+      "model": "mobilenetv2_tuned",
+      "run_id": "c61c4503fd4945818677efbf877d1581",
+      "loss": 0.6089855725495437,
+      "accuracy": 0.7210884353741497,
+      "precision": 0.7857142857142857,
+      "recall": 0.6790123456790124,
+      "f1": 0.7284768211920529,
+      "roc_auc": 0.8161242050130939,
+      "tn": 51,
+      "fp": 15,
+      "fn": 26,
+      "tp": 55,
+      "weighted_errors": 56,
+      "threshold": 0.6196606457233429,
+      "images": 147
+    }
+  },
+  "test_evaluated": true,
+  "selection_used_test": false,
+  "inference_passes_per_model": 1,
+  "evaluation_git_commit": "1ecf52158bee229309b4264eb31ced9938881af8",
+  "data_fingerprint": "ccf9e412522a4da9cb0f9b8d01c5f9e27ba44b30118e3c9f731b21e5d6b2d793",
+  "test_manifest_sha256": "35a84a7d6260de7dea6fb7c9226df38ddc2ddc3004f2f83b752a17b71cea54e9"
+}

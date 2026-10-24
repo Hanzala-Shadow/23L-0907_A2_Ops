@@ -1,11 +1,17 @@
 """Check cost-based thresholds and enforcement of a single test pass."""
 
+import csv
 import json
 
 import numpy as np
 import pytest
 
-from visionguard.evaluation import binary_metrics, choose_threshold, predict_once
+from visionguard.evaluation import (
+    binary_metrics,
+    choose_threshold,
+    predict_once,
+    save_test_predictions,
+)
 
 
 def test_threshold_uses_error_cost_and_deterministic_ties():
@@ -58,3 +64,38 @@ def test_interrupted_pass_is_not_repeated(tmp_path):
         predict_once(tmp_path, identity, fail)
     with pytest.raises(RuntimeError, match="refusing to repeat"):
         predict_once(tmp_path, identity, lambda: pytest.fail("must not run"))
+
+
+def test_exported_labels_use_selected_threshold(tmp_path):
+    path = tmp_path / "predictions.csv"
+    rows = [
+        {"relative_path": "a.png", "label": 0},
+        {"relative_path": "b.png", "label": 1},
+    ]
+    save_test_predictions(path, rows, [0.6, 0.7], 0.65)
+    saved = list(csv.DictReader(path.open()))
+    assert [row["predicted_label"] for row in saved] == ["0", "1"]
+
+
+def test_archived_results_prevent_inference_in_a_fresh_workspace(tmp_path):
+    identity = {"images": 2, "model_sha256": "same", "plan_sha256": "sealed"}
+    first = tmp_path / "first"
+    predict_once(first, identity, lambda: [0.2, 0.8])
+    archived = tmp_path / "archived"
+    archived.mkdir()
+    saved = json.loads((first / "predictions.json").read_text())
+    saved.pop("probabilities")
+    (archived / "receipt.json").write_text(json.dumps(saved))
+    save_test_predictions(
+        archived / "predictions.csv",
+        [{"relative_path": "a", "label": 0}, {"relative_path": "b", "label": 1}],
+        [0.2, 0.8],
+        0.6,
+    )
+    values, fresh = predict_once(
+        tmp_path / "new-workspace",
+        identity,
+        lambda: pytest.fail("must not infer again"),
+        archived=archived,
+    )
+    assert not fresh and values.tolist() == [0.2, 0.8]

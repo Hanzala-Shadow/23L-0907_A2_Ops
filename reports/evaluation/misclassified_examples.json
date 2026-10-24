@@ -1,0 +1,92 @@
+[
+  {
+    "example": 1,
+    "relative_path": "AiArtData/AiArtData/0002_AI-in-animal-classification.png",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "1c80e482a4eaab40f98b520d1a1b02aabb4ea07d48e194851f5655cbab09de37",
+    "ai_probability": 0.31794288754463196,
+    "predicted_label": 0
+  },
+  {
+    "example": 2,
+    "relative_path": "AiArtData/AiArtData/0qL4hrXp-V_NW-FR-.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "d59cf902931cd926113ebd33101bbe18574a54a14056aef280b6007a5bff5512",
+    "ai_probability": 0.35168468952178955,
+    "predicted_label": 0
+  },
+  {
+    "example": 3,
+    "relative_path": "AiArtData/AiArtData/403e1ee688f55ae08740e13dbcaae5633f7c1d3a-4032x2268.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "9cfb21ecb4349c09803b53daad5fd64caaa6e5df7188082da8add22fbd9e2cdc",
+    "ai_probability": 0.5551341772079468,
+    "predicted_label": 0
+  },
+  {
+    "example": 4,
+    "relative_path": "AiArtData/AiArtData/41b6d9592db18a15b1e32dfd50.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "1b522c5da852b8bb40a9f05ebb427b2974af9e7e5b8efce950e60e23b82cda7b",
+    "ai_probability": 0.6169930100440979,
+    "predicted_label": 0
+  },
+  {
+    "example": 5,
+    "relative_path": "AiArtData/AiArtData/63b413cd19c92c377052b31a_62c85730733d96f8213065f7_HERO2520-2520Yellow.jpeg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "11b9d164ed7dc38791d049b0ce368d0098007c38abd771f78be8bdf9e14e5c89",
+    "ai_probability": 0.5902974605560303,
+    "predicted_label": 0
+  },
+  {
+    "example": 6,
+    "relative_path": "AiArtData/AiArtData/76480055-12619627-image-a-40_1697122533354.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "ef1aa8705045acab03b66cf4aaa65c8e72b57881bfadcf241b2e263746ffcc1f",
+    "ai_probability": 0.10947661101818085,
+    "predicted_label": 0
+  },
+  {
+    "example": 7,
+    "relative_path": "AiArtData/AiArtData/Boris-Eldagsen-AI-art.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "5ebc0bc6c71b9ff4117471cdc8c5c2f5ad0772a804300bae2b3ad1722d189f13",
+    "ai_probability": 0.09378186613321304,
+    "predicted_label": 0
+  },
+  {
+    "example": 8,
+    "relative_path": "AiArtData/AiArtData/Bu69yrI45ueNWQX84ap5.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "da06f4b05b69b7f08ff6709cc24288601c676c09d673abf1d709a57229032449",
+    "ai_probability": 0.05768447741866112,
+    "predicted_label": 0
+  },
+  {
+    "example": 9,
+    "relative_path": "AiArtData/AiArtData/HD-wallpaper-artwork-midjourney-ai-ai-generated-nature-landscape-mountains-resolution.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "08cf8e81dfce9e129d3c249b79e949b5239227f851f2ace438fb07acd872c72f",
+    "ai_probability": 0.1514330357313156,
+    "predicted_label": 0
+  },
+  {
+    "example": 10,
+    "relative_path": "AiArtData/AiArtData/How-to-Use-Midjourney-to-create-AI-Art.jpg",
+    "class": "ai_generated",
+    "label": "1",
+    "sha256": "69903ef3b8fa279c14c0a7142293fe48537105b51de8fff1e0f9e188a4e9e54c",
+    "ai_probability": 0.5477149486541748,
+    "predicted_label": 0
+  }
+]

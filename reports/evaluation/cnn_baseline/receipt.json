@@ -1,0 +1,12 @@
+{
+  "identity": {
+    "role": "cnn_baseline",
+    "plan_sha256": "4a13976cefd0f19d19a8255395c69688e4ffdd75e89581098d8544c87dd56e1d",
+    "model_sha256": "012fa407cfeea578ded44b6bc1518419ff4c6c08b296c836502c093e54bcacfb",
+    "test_manifest_sha256": "35a84a7d6260de7dea6fb7c9226df38ddc2ddc3004f2f83b752a17b71cea54e9",
+    "images": 147,
+    "threshold": 0.47256049513816833
+  },
+  "probabilities_sha256": "78476360fcda50f14907db875a40c9f4df16195b038b64c18001f963240c24d7",
+  "inference_passes": 1
+}

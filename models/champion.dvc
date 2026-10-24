@@ -1,0 +1,6 @@
+outs:
+- md5: 2d82adda86a9837f0cc9ad0b5393bcc9.dir
+  size: 14381766
+  nfiles: 2
+  hash: md5
+  path: champion

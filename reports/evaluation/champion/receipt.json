@@ -1,0 +1,12 @@
+{
+  "identity": {
+    "role": "champion",
+    "plan_sha256": "4a13976cefd0f19d19a8255395c69688e4ffdd75e89581098d8544c87dd56e1d",
+    "model_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+    "test_manifest_sha256": "35a84a7d6260de7dea6fb7c9226df38ddc2ddc3004f2f83b752a17b71cea54e9",
+    "images": 147,
+    "threshold": 0.6196606457233429
+  },
+  "probabilities_sha256": "15018a5a75a0cc3291a2753831807dce42a111099b50c12b54f22753789520e8",
+  "inference_passes": 1
+}

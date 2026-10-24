@@ -16,6 +16,8 @@ def main():
     parser.add_argument("image", type=Path)
     parser.add_argument("--alias", default="champion")
     args = parser.parse_args()
+    if not args.image.is_file():
+        parser.error("The image does not exist")
     check_space(ROOT, margin_gib=0.25)
     configure_cpu()
     from dotenv import load_dotenv

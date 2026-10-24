@@ -7,6 +7,11 @@ deployment are later stages. An eight-trial Keras Tuner search varies learning
 rate, dropout and the number of unfrozen backbone layers; see
 [tuning instructions](docs/tuning.md) and [results](reports/training/tuning-results.md).
 
+The final model, validation-derived threshold, single test evaluation and
+champion registry version are documented in the
+[final evaluation](reports/evaluation/README.md) and
+[selection workflow](docs/model-selection.md).
+
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private
 [DagsHub repository](https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops)

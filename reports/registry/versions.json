@@ -1,0 +1,24 @@
+{
+  "name": "23L-0907_A2_Ops",
+  "alias": "champion",
+  "champion_version": "2",
+  "versions": [
+    {
+      "role": "registry_reference",
+      "version": "1",
+      "run_id": "30e0c29830cf47509601dd80fbe38b39",
+      "source": "mlflow-artifacts:/de5262992749471ba423dfaa093d84ea/30e0c29830cf47509601dd80fbe38b39/artifacts/model",
+      "threshold": 0.7474181652069092,
+      "status": "READY"
+    },
+    {
+      "role": "champion",
+      "version": "2",
+      "run_id": "c61c4503fd4945818677efbf877d1581",
+      "source": "mlflow-artifacts:/de5262992749471ba423dfaa093d84ea/c61c4503fd4945818677efbf877d1581/artifacts/model",
+      "threshold": 0.6196606457233429,
+      "status": "READY"
+    }
+  ],
+  "selection_plan_sha256": "4a13976cefd0f19d19a8255395c69688e4ffdd75e89581098d8544c87dd56e1d"
+}

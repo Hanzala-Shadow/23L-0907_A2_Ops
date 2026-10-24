@@ -1,0 +1,12 @@
+{
+  "registry_name": "23L-0907_A2_Ops",
+  "version": "2",
+  "alias": "champion",
+  "run_id": "c61c4503fd4945818677efbf877d1581",
+  "label": "ai_generated",
+  "ai_probability": 0.9492709636688232,
+  "confidence": 0.9492709636688232,
+  "threshold": 0.6196606457233429,
+  "validation_image": "AiArtData/AiArtData/06as5rHi0sgG4W2Tq.png",
+  "test_image_used": false
+}
