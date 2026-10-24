@@ -1,0 +1,13 @@
+# Reuse the local database, history volume, and read-only champion policy mount.
+services:
+  web:
+    image: visionguard:client
+    build:
+      dockerfile: Dockerfile.client
+    environment:
+      INFERENCE_BACKEND: remote
+      MODEL_API_URL: ${MODEL_API_URL:?Configure the deployed API origin}
+      MODEL_API_KEY: ${MODEL_API_KEY:?Configure the server-only API key}
+      MODEL_API_MANIFEST_PATH: /app/cloud/model-manifest.json
+      MODEL_API_CONNECT_TIMEOUT: ${MODEL_API_CONNECT_TIMEOUT:-3}
+      MODEL_API_READ_TIMEOUT: ${MODEL_API_READ_TIMEOUT:-45}

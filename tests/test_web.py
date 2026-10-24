@@ -43,6 +43,7 @@ def app():
             "TESTING": True,
             "SECRET_KEY": "x" * 48,
             "DATABASE_URL": "sqlite://",
+            "INFERENCE_BACKEND": "local",
             "MAX_UPLOAD_BYTES": 1024 * 1024,
             "MAX_IMAGE_PIXELS": 1_000_000,
             "HISTORY_PAGE_SIZE": 2,

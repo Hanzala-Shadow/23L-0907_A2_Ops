@@ -96,8 +96,9 @@ and 503 with `Retry-After` when the inference slot is occupied.
 
 Use the deployed URL and key from `.env.cloud` to call the API from a server
 or Postman. Keep the key out of URLs, browser JavaScript, screenshots, shell
-history, and source control. The local Flask app continues using its local
-champion until a separate integration step changes that behavior.
+history, and source control. The local Flask app uses the
+[server-side cloud integration](cloud-integration.md) while PostgreSQL history
+stays on this machine.
 
 After setting the deployed origin as `MODEL_API_URL` in `.env.cloud`, run:
 

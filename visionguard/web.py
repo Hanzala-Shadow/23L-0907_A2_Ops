@@ -24,7 +24,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from visionguard.database import HistoryStore
-from visionguard.serving import load_bundle
+from visionguard.remote import RemoteInferenceError, RemoteModelService
 from visionguard.uploads import MemoryRequest, UploadError, safe_name, validate_upload
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +43,16 @@ def create_app(config=None, model_service=None, store=None):
             "MODEL_POLICY_PATH", "models/champion/policy.json"
         ),
         DECISION_THRESHOLD=os.environ.get("DECISION_THRESHOLD"),
+        INFERENCE_BACKEND=os.environ.get("INFERENCE_BACKEND", "local"),
+        MODEL_API_URL=os.environ.get("MODEL_API_URL", ""),
+        MODEL_API_KEY=os.environ.get("MODEL_API_KEY", ""),
+        MODEL_API_CONNECT_TIMEOUT=float(
+            os.environ.get("MODEL_API_CONNECT_TIMEOUT", "3")
+        ),
+        MODEL_API_READ_TIMEOUT=float(os.environ.get("MODEL_API_READ_TIMEOUT", "45")),
+        MODEL_API_MANIFEST_PATH=os.environ.get(
+            "MODEL_API_MANIFEST_PATH", "cloud/model-manifest.json"
+        ),
         MAX_UPLOAD_BYTES=int(os.environ.get("MAX_UPLOAD_BYTES", "8388608")),
         MAX_IMAGE_PIXELS=int(os.environ.get("MAX_IMAGE_PIXELS", "16000000")),
         DISK_RESERVE_GIB=float(os.environ.get("DISK_RESERVE_GIB", "2")),
@@ -57,6 +67,14 @@ def create_app(config=None, model_service=None, store=None):
     )
     if config:
         app.config.update(config)
+    if app.config["INFERENCE_BACKEND"] not in ("local", "remote"):
+        raise ValueError("INFERENCE_BACKEND must be local or remote")
+    remote = app.config["INFERENCE_BACKEND"] == "remote"
+    if remote:
+        app.config["MAX_UPLOAD_BYTES"] = min(
+            app.config["MAX_UPLOAD_BYTES"], 4 * 1024**2
+        )
+        app.config["MAX_IMAGE_PIXELS"] = min(app.config["MAX_IMAGE_PIXELS"], 4_000_000)
     if not app.config["SECRET_KEY"] or len(app.config["SECRET_KEY"]) < 32:
         raise ValueError("Set a persistent FLASK_SECRET_KEY of at least 32 characters")
     if not app.config["DATABASE_URL"]:
@@ -76,15 +94,30 @@ def create_app(config=None, model_service=None, store=None):
         else HistoryStore(app.config["DATABASE_URL"], app.testing)
     )
     store.initialize()
-    model_service = (
-        model_service
-        if model_service is not None
-        else load_bundle(
-            ROOT / app.config["MODEL_PATH"],
-            ROOT / app.config["MODEL_POLICY_PATH"],
-            app.config["DECISION_THRESHOLD"],
-        )
-    )
+    if model_service is None:
+        if remote:
+            model_service = RemoteModelService(
+                app.config["MODEL_API_URL"],
+                app.config["MODEL_API_KEY"],
+                ROOT / app.config["MODEL_POLICY_PATH"],
+                ROOT / app.config["MODEL_API_MANIFEST_PATH"],
+                app.config["MODEL_API_CONNECT_TIMEOUT"],
+                app.config["MODEL_API_READ_TIMEOUT"],
+            )
+            configured = app.config["DECISION_THRESHOLD"]
+            if (
+                configured is not None
+                and float(configured) != model_service.policy["threshold"]
+            ):
+                raise ValueError("DECISION_THRESHOLD differs from the saved policy")
+        else:
+            from visionguard.serving import load_bundle
+
+            model_service = load_bundle(
+                ROOT / app.config["MODEL_PATH"],
+                ROOT / app.config["MODEL_POLICY_PATH"],
+                app.config["DECISION_THRESHOLD"],
+            )
     app.extensions.update(history=store, champion=model_service)
 
     def json_requested():
@@ -132,6 +165,7 @@ def create_app(config=None, model_service=None, store=None):
             "upload.html",
             max_mb=app.config["MAX_UPLOAD_BYTES"] / 1024**2,
             max_mp=app.config["MAX_IMAGE_PIXELS"] / 1_000_000,
+            remote=remote,
         )
 
     @app.post("/predict")
@@ -216,6 +250,28 @@ def create_app(config=None, model_service=None, store=None):
                     "History is unavailable. Please try again later.", 503
                 )
             return error_page(message, status, row)
+        except RemoteInferenceError as error:
+            app.logger.warning("Cloud prediction failed (%s)", error.code)
+            try:
+                row = store.add(
+                    status="rejected"
+                    if error.code == "cloud_rejected_upload"
+                    else "error",
+                    filename=filename,
+                    **details,
+                    **metadata(),
+                    error_code=error.code,
+                    error_message=str(error),
+                    processing_ms=(time.monotonic() - started) * 1000,
+                )
+            except SQLAlchemyError:
+                return error_page(
+                    "History is unavailable. Please try again later.", 503
+                )
+            response = app.make_response(error_page(str(error), error.status, row))
+            if error.status == 503:
+                response.headers["Retry-After"] = "5"
+            return response
         except SQLAlchemyError as error:
             app.logger.error("Prediction could not be saved (%s)", type(error).__name__)
             return error_page(
@@ -290,7 +346,11 @@ def create_app(config=None, model_service=None, store=None):
         except SQLAlchemyError:
             database_ok = False
         free = shutil.disk_usage(ROOT).free / GIB
-        ready = database_ok and free >= app.config["DISK_RESERVE_GIB"] + 0.125
+        cloud = model_service.health() if remote else None
+        model_ok = cloud is None or cloud["status"] == "ok"
+        ready = (
+            database_ok and model_ok and free >= app.config["DISK_RESERVE_GIB"] + 0.125
+        )
         return jsonify(
             status="ok" if ready else "degraded",
             database={
@@ -298,7 +358,10 @@ def create_app(config=None, model_service=None, store=None):
                 "backend": store.engine.dialect.name,
             },
             model={
-                "loaded": True,
+                "loaded": not remote,
+                "backend": "vercel" if remote else "local",
+                "status": "ok" if model_ok else "unavailable",
+                "error_code": cloud.get("error_code") if cloud else None,
                 "name": model_service.policy["registry_name"],
                 "version": model_service.policy["registry_version"],
                 "threshold": model_service.policy["threshold"],

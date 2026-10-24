@@ -171,6 +171,10 @@ readiness; predictions require an API key. See [cloud setup and HTTP contract](d
 
 ## Storage and checks
 
+The local Flask app can use the deployed API with bounded timeouts and
+PostgreSQL history. See [cloud integration](docs/cloud-integration.md) for the
+small client container, failure handling, and preserved local storage.
+
 Keep at least 2 GiB free on the Linux filesystem. Downloads and split generation
 check this reserve with an additional safety margin. Check space before DVC
 copies, training and Docker builds. Keep one Python environment, avoid pip

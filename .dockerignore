@@ -18,6 +18,7 @@ visionguard/**
 !visionguard/serving.py
 !visionguard/uploads.py
 !visionguard/web.py
+!visionguard/remote.py
 !visionguard/templates/
 visionguard/templates/**
 !visionguard/templates/*.html

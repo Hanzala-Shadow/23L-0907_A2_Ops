@@ -7,7 +7,7 @@
     <h1>What does your image suggest?</h1>
     <p class="lead">Check for patterns associated with AI-generated images. Get a model verdict, a confidence score, and a saved record you can revisit.</p>
     <div class="note"><strong>A useful signal. An imperfect one.</strong><p>Art, screenshots, editing and unfamiliar styles can confuse the model. A result cannot establish whether an image is authentic.</p></div>
-    <p class="privacy">Your image is discarded after processing. History stores the filename and result, not the image itself.</p>
+    <p class="privacy">{% if remote %}Your image is sent securely to the cloud model for classification. {% endif %}Your image is discarded after processing. History stores the filename and result, not the image itself.</p>
   </div>
   <section class="panel upload-panel" aria-labelledby="upload-heading">
     <p class="eyebrow">One image at a time</p>
