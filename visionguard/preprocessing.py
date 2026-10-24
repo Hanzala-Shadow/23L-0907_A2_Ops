@@ -13,7 +13,8 @@ def preprocess_image(source, image_size=128):
 
     ``source`` can be a path or a binary file object such as an uploaded image.
     EXIF orientation is applied before compositing and resizing. Transparency
-    and padding use white; the saved CNN performs the 1/255 rescaling itself.
+    and padding use white. Each saved model owns its normalization; callers
+    supply uint8 pixels without additional scaling.
     """
     if not isinstance(image_size, int) or image_size < 8:
         raise ValueError("image_size must be an integer of at least 8 pixels")

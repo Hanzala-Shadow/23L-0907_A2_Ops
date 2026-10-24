@@ -28,5 +28,28 @@
       "rotation": 0.05,
       "zoom": 0.1
     }
+  },
+  "mobilenetv2": {
+    "seed": 42,
+    "alpha": 1.0,
+    "dense_units": 64,
+    "dropout": 0.3,
+    "augmentation": {
+      "rotation": 0.05,
+      "zoom": 0.1
+    },
+    "frozen": {
+      "epochs": 12,
+      "learning_rate": 0.001,
+      "early_stopping_patience": 3,
+      "lr_patience": 2
+    },
+    "finetuned": {
+      "epochs": 8,
+      "learning_rate": 1e-05,
+      "early_stopping_patience": 3,
+      "lr_patience": 2,
+      "unfreeze_prefix": "block_16_"
+    }
   }
 }

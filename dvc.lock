@@ -58,11 +58,22 @@ stages:
       hash: md5
       md5: d29680b23e7f3c97c2b708b7fffc0842
       size: 17049
-    - path: visionguard
+    - path: visionguard/__init__.py
       hash: md5
-      md5: e0becbe258fac4778734f091102d6399.dir
-      size: 6367
-      nfiles: 4
+      md5: abe17b248b193886ba74b36d03befa4f
+      size: 51
+    - path: visionguard/cnn.py
+      hash: md5
+      md5: 1bc466395d435434463e5e11e8547c99
+      size: 2157
+    - path: visionguard/pipeline.py
+      hash: md5
+      md5: 8c1bca4ff24bbc63b207e8a76db4b06d
+      size: 2840
+    - path: visionguard/preprocessing.py
+      hash: md5
+      md5: d5762acc6bbffd3126c6de87602d2138
+      size: 1369
     params:
       params.json:
         cnn_baseline:

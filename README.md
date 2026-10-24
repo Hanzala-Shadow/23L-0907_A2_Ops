@@ -118,6 +118,23 @@ validation metrics. The test set remains reserved for final evaluation.
 See [training details](docs/training.md) for architecture, data handling,
 reproducibility and artifact locations.
 
+## Transfer learning
+
+MobileNetV2 uses ImageNet weights, first with a frozen backbone and then with
+only its last inverted residual block fine-tuned. The saved models include their
+own [-1, 1] input scaling. BatchNorm statistics stay frozen in both phases.
+
+```bash
+source .venv/bin/activate
+python scripts/check_disk.py
+PYTHONHASHSEED=42 dvc repro compare_models
+dvc push -j 2
+```
+
+The two phases use TensorFlow autologging on DagsHub. They retain independent
+checkpoints and validation reports so fine-tuning can be compared with the
+frozen model and custom CNN. See [transfer-learning details](docs/transfer-learning.md).
+
 ## Storage and checks
 
 Keep at least 2 GiB free on the Linux filesystem. Downloads and split generation

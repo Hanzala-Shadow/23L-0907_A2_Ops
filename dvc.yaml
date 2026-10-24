@@ -15,7 +15,10 @@ stages:
     deps:
       - scripts/train_cnn.py
       - scripts/prepare_splits.py
-      - visionguard
+      - visionguard/__init__.py
+      - visionguard/cnn.py
+      - visionguard/pipeline.py
+      - visionguard/preprocessing.py
       - requirements/locked.txt
       - reports/data/image_manifest.csv
       - data/raw
@@ -27,4 +30,82 @@ stages:
     outs:
       - models/cnn_baseline
       - reports/training/cnn_baseline:
+          cache: false
+  train_mobilenet_frozen:
+    cmd: python -m scripts.train_transfer --phase frozen
+    deps:
+      - scripts/train_transfer.py
+      - scripts/train_cnn.py
+      - scripts/prepare_splits.py
+      - visionguard/__init__.py
+      - visionguard/cnn.py
+      - visionguard/pipeline.py
+      - visionguard/preprocessing.py
+      - visionguard/transfer.py
+      - visionguard/transfer_reporting.py
+      - requirements/locked.txt
+      - reports/data/image_manifest.csv
+      - data/raw
+      - data/splits
+    params:
+      - params.json:
+          - preprocessing
+          - mobilenetv2.seed
+          - mobilenetv2.alpha
+          - mobilenetv2.dense_units
+          - mobilenetv2.dropout
+          - mobilenetv2.augmentation
+          - mobilenetv2.frozen
+    outs:
+      - models/mobilenetv2_frozen
+      - reports/training/mobilenetv2_frozen:
+          cache: false
+  train_mobilenet_finetuned:
+    cmd: python -m scripts.train_transfer --phase finetuned
+    deps:
+      - scripts/train_transfer.py
+      - scripts/train_cnn.py
+      - scripts/prepare_splits.py
+      - visionguard/__init__.py
+      - visionguard/cnn.py
+      - visionguard/pipeline.py
+      - visionguard/preprocessing.py
+      - visionguard/transfer.py
+      - visionguard/transfer_reporting.py
+      - requirements/locked.txt
+      - reports/data/image_manifest.csv
+      - data/raw
+      - data/splits
+      - models/mobilenetv2_frozen
+      - reports/training/mobilenetv2_frozen/run.json
+    params:
+      - params.json:
+          - preprocessing
+          - mobilenetv2.seed
+          - mobilenetv2.alpha
+          - mobilenetv2.dense_units
+          - mobilenetv2.dropout
+          - mobilenetv2.augmentation
+          - mobilenetv2.finetuned
+    outs:
+      - models/mobilenetv2_finetuned
+      - reports/training/mobilenetv2_finetuned:
+          cache: false
+  compare_models:
+    cmd: python -m scripts.compare_models
+    deps:
+      - scripts/compare_models.py
+      - visionguard/transfer_reporting.py
+      - reports/training/cnn_baseline/metrics.json
+      - reports/training/cnn_baseline/run.json
+      - reports/training/mobilenetv2_frozen/metrics.json
+      - reports/training/mobilenetv2_frozen/run.json
+      - reports/training/mobilenetv2_finetuned/metrics.json
+      - reports/training/mobilenetv2_finetuned/run.json
+    outs:
+      - reports/training/model_comparison.csv:
+          cache: false
+      - reports/training/model_comparison.json:
+          cache: false
+      - reports/training/model_comparison.md:
           cache: false
