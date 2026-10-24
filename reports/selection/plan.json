@@ -1,0 +1,112 @@
+{
+  "policy": {
+    "model_objective": "validation_loss",
+    "false_positive_cost": 2,
+    "false_negative_cost": 1,
+    "threshold_objective": "minimize 2 * false positives + false negatives on validation",
+    "threshold_tie_break": "fewer false positives, closest to 0.5, then higher threshold",
+    "error_priority": "Calling a real image AI-generated can falsely discredit authentic work. Treat that error as twice as costly as missing an AI image for this demonstration.",
+    "registry_name": "23L-0907_A2_Ops",
+    "registry_alias": "champion",
+    "test_models": [
+      "cnn_baseline",
+      "champion"
+    ]
+  },
+  "models": {
+    "champion": {
+      "model": "mobilenetv2_tuned",
+      "model_path": "models/mobilenetv2_tuned/best.keras",
+      "model_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+      "run_id": "c61c4503fd4945818677efbf877d1581",
+      "training_git_commit": "2999b5421a62d36956ef21a9c984a01c809b8559",
+      "validation_loss": 0.4851353168487549,
+      "validation_predictions_sha256": "bfc0c096174150333373fe73b06ca54707b127fb0d4b64f4a5a4583fe68f922e",
+      "threshold": 0.6196606457233429,
+      "validation_metrics": {
+        "loss": 0.48513537483499036,
+        "accuracy": 0.8082191780821918,
+        "precision": 0.863013698630137,
+        "recall": 0.7777777777777778,
+        "f1": 0.8181818181818182,
+        "roc_auc": 0.866286799620133,
+        "tn": 55,
+        "fp": 10,
+        "fn": 18,
+        "tp": 63,
+        "weighted_errors": 38,
+        "threshold": 0.6196606457233429,
+        "images": 146
+      }
+    },
+    "cnn_baseline": {
+      "model": "cnn_baseline",
+      "model_path": "models/cnn_baseline/best.keras",
+      "model_sha256": "012fa407cfeea578ded44b6bc1518419ff4c6c08b296c836502c093e54bcacfb",
+      "run_id": "932b890056eb403aaefa21905070956d",
+      "training_git_commit": "fef79320155900edecea0c0b0fb4792965d5bab5",
+      "validation_loss": 0.7012144923210144,
+      "validation_predictions_sha256": "e9b7334ad2bcaa8a483f2f33e70a3e35f7e80392b30e3def06fc5eaf5f8e8a73",
+      "threshold": 0.47256049513816833,
+      "validation_metrics": {
+        "loss": 0.7012145657756731,
+        "accuracy": 0.5136986301369864,
+        "precision": 0.8125,
+        "recall": 0.16049382716049382,
+        "f1": 0.26804123711340205,
+        "roc_auc": 0.515099715099715,
+        "tn": 62,
+        "fp": 3,
+        "fn": 68,
+        "tp": 13,
+        "weighted_errors": 74,
+        "threshold": 0.47256049513816833,
+        "images": 146
+      }
+    },
+    "registry_reference": {
+      "model": "mobilenetv2_frozen",
+      "model_path": "models/mobilenetv2_frozen/best.keras",
+      "model_sha256": "ac745383244fb23a755cd5de9133b5ba473b651dcaccf3149fbe9139ea47347c",
+      "run_id": "30e0c29830cf47509601dd80fbe38b39",
+      "training_git_commit": "b1d5f71123345377024bd6cf533eed72b461f6b9",
+      "validation_loss": 0.4984475374221802,
+      "validation_predictions_sha256": "c331a8ae8c8c01c6a7745cd03937782150e34117f8ac72d4d1e58a671702bbfe",
+      "threshold": 0.7474181652069092,
+      "validation_metrics": {
+        "loss": 0.49844754743489766,
+        "accuracy": 0.7534246575342466,
+        "precision": 0.9245283018867925,
+        "recall": 0.6049382716049383,
+        "f1": 0.7313432835820896,
+        "roc_auc": 0.8417853751187084,
+        "tn": 61,
+        "fp": 4,
+        "fn": 32,
+        "tp": 49,
+        "weighted_errors": 40,
+        "threshold": 0.7474181652069092,
+        "images": 146
+      }
+    }
+  },
+  "selection_git_commit": "6e0f5c061935025b2e91b7018f0734d460862443",
+  "data_fingerprint": "ccf9e412522a4da9cb0f9b8d01c5f9e27ba44b30118e3c9f731b21e5d6b2d793",
+  "split_manifest_sha256": {
+    "train": "bb1d4921c9082881330542aec9d37d8907cb1360577c51365def9cf098613a1b",
+    "validation": "c28585a5860e3a21ea33e5b42cad91922a4a075275ef80bfe500d1bc680e2cd7",
+    "test": "35a84a7d6260de7dea6fb7c9226df38ddc2ddc3004f2f83b752a17b71cea54e9"
+  },
+  "preprocessing": {
+    "policy": "rgb-white-letterbox-v1",
+    "image_size": 128,
+    "batch_size": 16,
+    "cache_in_memory": true
+  },
+  "labels": {
+    "real": 0,
+    "ai_generated": 1
+  },
+  "candidate_count": 11,
+  "test_evaluated": false
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "model": "cnn_baseline",
+    "run_id": "932b890056eb403aaefa21905070956d",
+    "validation_loss": 0.7012144923210144,
+    "validation_accuracy": 0.4452054794520548
+  },
+  {
+    "model": "mobilenetv2_frozen",
+    "run_id": "30e0c29830cf47509601dd80fbe38b39",
+    "validation_loss": 0.4984475374221802,
+    "validation_accuracy": 0.7808219178082192
+  },
+  {
+    "model": "mobilenetv2_finetuned",
+    "run_id": "ae95c40886344577ade22fa344f0a7a9",
+    "validation_loss": 0.5104479193687439,
+    "validation_accuracy": 0.773972602739726
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "6b72ce8920c84fa6ad9b326cb2da5b7d",
+    "validation_loss": 0.5138388872146606,
+    "validation_accuracy": 0.7671232876712328
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "3a67561976894ca7ab51c928abbd659a",
+    "validation_loss": 0.5033212900161743,
+    "validation_accuracy": 0.7671232876712328
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "829d1e5888b14aa6845067c59e8f86fd",
+    "validation_loss": 0.5041602253913879,
+    "validation_accuracy": 0.7671232876712328
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "36b46870e7ab4eae89648f35882a49d6",
+    "validation_loss": 0.5440912246704102,
+    "validation_accuracy": 0.7602739726027398
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "d1b5ff9d31ac4d0aa1c8a4278b184029",
+    "validation_loss": 0.5125776529312134,
+    "validation_accuracy": 0.7465753424657534
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "4b4fe730d948462ca13d361a5f865d2c",
+    "validation_loss": 0.5110390186309814,
+    "validation_accuracy": 0.7534246575342466
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "94a24bdfe5344fce8ac0ae18ed2e1809",
+    "validation_loss": 0.49603527784347534,
+    "validation_accuracy": 0.7602739726027398
+  },
+  {
+    "model": "mobilenetv2_tuned",
+    "run_id": "c61c4503fd4945818677efbf877d1581",
+    "validation_loss": 0.4851353168487549,
+    "validation_accuracy": 0.7876712328767124
+  }
+]
