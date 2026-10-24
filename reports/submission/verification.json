@@ -1,0 +1,98 @@
+{
+  "checked_at_utc": "2026-10-24T20:01:08.706451+00:00",
+  "source_commit": "90b93195d46d58ecfcae174062cf6f5fef8c28bf",
+  "report_path": "output/pdf/23L-0907_VisionGuard.pdf",
+  "report_validation": {
+    "pdf_sha256": "357bbfd8aa24697fa89f40f4656ca7a3b67e913f33a2270050259325792595ec",
+    "pdf_bytes": 4731512,
+    "pages": 41,
+    "figures": 46,
+    "required_subtask_ids_present": [
+      "1.1",
+      "1.2",
+      "1.3",
+      "1.4",
+      "2.1",
+      "2.2",
+      "2.3",
+      "2.4",
+      "2.5",
+      "2.6",
+      "2.7",
+      "3.1",
+      "3.2",
+      "3.3",
+      "3.4",
+      "3.5",
+      "3.6",
+      "4.1",
+      "4.2",
+      "4.3",
+      "4.4",
+      "6.1",
+      "6.2",
+      "6.3",
+      "6.4",
+      "6.5",
+      "6.6"
+    ],
+    "all_task_chapters_present": true,
+    "text_within_page_bounds": true,
+    "source_commit_on_cover": "90b93195d46d58ecfcae174062cf6f5fef8c28bf",
+    "assistance_disclosure_present": true,
+    "all_pages_visually_reviewed": true,
+    "configured_secret_scan_passed": true
+  },
+  "source_ci": {
+    "url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40127571425",
+    "conclusion": "success",
+    "tests_passed": 141,
+    "docker_and_compose_checks": "passed"
+  },
+  "external_postman": {
+    "url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40125682249",
+    "requests": 6,
+    "assertions_passed": 13,
+    "failures": 0,
+    "runner_network": "GitHub-hosted Ubuntu, separate from local machine"
+  },
+  "preserved_state": {
+    "source_commit": "90b93195d46d58ecfcae174062cf6f5fef8c28bf",
+    "original_history_rows_preserved": 11,
+    "history_rows": 19,
+    "native_champion_unchanged": true,
+    "test_inference_receipts_unchanged": true,
+    "database_container_preserved": true,
+    "temporary_lab_containers_removed": true,
+    "local_health": {
+      "database": {
+        "backend": "postgresql",
+        "status": "ok"
+      },
+      "debug": false,
+      "disk": {
+        "free_gib": 2.388,
+        "reserve_gib": 2.0
+      },
+      "model": {
+        "backend": "vercel",
+        "error_code": null,
+        "loaded": false,
+        "name": "23L-0907_A2_Ops",
+        "status": "ok",
+        "threshold": 0.6196606457233429,
+        "version": "2"
+      },
+      "status": "ok"
+    },
+    "free_disk_gib": 2.392333984375,
+    "reserve_gib": 2
+  },
+  "remaining_student_handoff": [
+    "Review the report",
+    "Grant grading access to both private repositories",
+    "Provide the API key privately if the grader needs predictions"
+  ],
+  "optional_grad_cam_attempted": false,
+  "report_commit_contains_executable_changes": false
+}
