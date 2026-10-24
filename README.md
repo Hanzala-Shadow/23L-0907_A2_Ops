@@ -165,7 +165,8 @@ results; the test set has not been evaluated. See the
 The standalone API uses a float32 LiteRT export of champion version 2 for
 Vercel's free Hobby plan. It preserves the saved threshold and all validation
 decisions. The local Flask app and PostgreSQL history continue running locally.
-See [cloud setup and HTTP contract](docs/cloud-api.md) and
+The [live health check](https://23l-0907-a2-ops-api.vercel.app/health) exposes
+readiness; predictions require an API key. See [cloud setup and HTTP contract](docs/cloud-api.md) and
 [export verification](reports/cloud/export.json).
 
 ## Storage and checks

@@ -1,5 +1,9 @@
 # Cloud model API
 
+Live health check: [23l-0907-a2-ops-api.vercel.app/health](https://23l-0907-a2-ops-api.vercel.app/health).
+Prediction endpoint: `POST https://23l-0907-a2-ops-api.vercel.app/predict`.
+The API key is stored only in ignored `.env.cloud` and Vercel production secrets.
+
 The cloud API runs on Vercel Hobby with Python 3.12 and CPU-only inference.
 It uses a float32 LiteRT export of champion registry version 2, with the saved
 threshold `0.6196606457233429`. The original Keras checkpoint, local Flask app,
@@ -101,8 +105,10 @@ After setting the deployed origin as `MODEL_API_URL` in `.env.cloud`, run:
 .venv/bin/python scripts/check_cloud_api.py
 ```
 
-This checks health, a real and an AI-generated validation sample, authentication,
-invalid uploads, and the pixel limit. It writes `reports/cloud/deployment.json`
+This checks health, three generated images against the local LiteRT outputs,
+authentication, invalid uploads, and the pixel limit. Dataset images stay local.
+For local reference inference it uses the isolated lightweight runtime at
+`reports/training-runtime/cloud/venv/bin/python`, or `CLOUD_RUNTIME_PYTHON` if set. It writes `reports/cloud/deployment.json`
 without keys or signed URLs. It does not use the test set or local history.
 
 Provider references: [Hobby plan](https://vercel.com/docs/plans/hobby),

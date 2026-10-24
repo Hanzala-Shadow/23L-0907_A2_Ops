@@ -1,0 +1,57 @@
+{
+  "source_commit": "bbcdc7601816447aaafbba4cadee17837043b334",
+  "files": [
+    {
+      "path": ".python-version",
+      "sha256": "7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "59b42fe13ccf60c6db045d4e7decffe18eaad4e35eb20396a9dd439a1f07751e"
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "bfa408e2718ed8654755890c84d5c355a3318dd84c14b66b844a94509a073b92"
+    },
+    {
+      "path": "requirements/cloud.lock",
+      "sha256": "ad1858f8b6f55d1dfd89ed1f77e17e764bf3839774b5e02dd9b855b47b0e88e4"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "07c88f40a7a451a5f551b2e388313d616901e0c85e39eaf82e220dcc0fbf6ae9"
+    },
+    {
+      "path": "cloud/wsgi.py",
+      "sha256": "f76e0b223a3ebe550b4309e5e4f4b784b03a9aaa8fce089adab026035c98596b"
+    },
+    {
+      "path": "cloud/model-manifest.json",
+      "sha256": "9827e73ed62eed9bf1655a29a7005c281bb8c78c245a329573a83469b0f0c7ef"
+    },
+    {
+      "path": "scripts/fetch_cloud_model.py",
+      "sha256": "0e6b6b5e4510091eaa2944086c0c459639c6de8031dac2f0da9ed823afe22c20"
+    },
+    {
+      "path": "visionguard/__init__.py",
+      "sha256": "2ef111690b97d1ec72bc3ee66ee0c0b758b23bfcf105f3a25730b8303b181139"
+    },
+    {
+      "path": "visionguard/cloud.py",
+      "sha256": "bbb6ff494b06de3cf81748bec317f1594825cb9afb3f1060239cf15b307bcabc"
+    },
+    {
+      "path": "visionguard/inference.py",
+      "sha256": "ab222c06da7e0198f7df22021a5d5cc58c96f030e1f90e60a039e32103b9a92f"
+    },
+    {
+      "path": "visionguard/preprocessing.py",
+      "sha256": "11b5574dfaa6b5818d60862fa5baf27e16e0f7fc3bb249c895b72059b75cb8b5"
+    },
+    {
+      "path": "visionguard/uploads.py",
+      "sha256": "142d2ee42fa36fad1dff2e144f1f3de399124745f2154c2bc7ce779b6c01afd8"
+    }
+  ]
+}

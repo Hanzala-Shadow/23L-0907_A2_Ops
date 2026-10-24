@@ -1,20 +1,46 @@
-"""Verify the deployed API with validation samples and safe rejection checks."""
+"""Verify the cloud API using generated images; dataset files stay local."""
 
-import csv
+import importlib.util
 import io
 import json
+import os
+import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit
 
-import requests
-from dotenv import dotenv_values, set_key
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def synthetic_images():
+    images = {}
+    for color in ("red", "blue", "white"):
+        output = io.BytesIO()
+        Image.new("RGB", (160, 96), color).save(output, format="PNG")
+        images[color] = output.getvalue()
+    return images
+
+
+def local_reference():
+    sys.path.insert(0, str(ROOT))
+    from visionguard.cloud import load_cloud_bundle
+
+    predictor, _ = load_cloud_bundle(
+        ROOT / "models/cloud-api", ROOT / "cloud/model-manifest.json"
+    )
+    return {
+        name: predictor.predict(io.BytesIO(data))
+        for name, data in synthetic_images().items()
+    }
+
+
 def main():
+    import requests
+    from dotenv import dotenv_values, set_key
+
     settings = dotenv_values(ROOT / ".env.cloud")
     base_url = settings.get("MODEL_API_URL", "").rstrip("/")
     parsed = urlsplit(base_url)
@@ -37,54 +63,43 @@ def main():
     assert health_data["status"] == "ok"
     assert health_data["model"]["sha256"] == manifest["model_sha256"]
     assert health_data["model"]["threshold"] == manifest["threshold"]
-    with (
-        ROOT / "reports/training/keras_tuner/trial_7/validation_predictions.csv"
-    ).open() as file:
-        rows = list(csv.DictReader(file))
+    fallback = ROOT / "reports/training-runtime/cloud/venv/bin/python"
+    runtime = os.environ.get(
+        "CLOUD_RUNTIME_PYTHON",
+        sys.executable if importlib.util.find_spec("ai_edge_litert") else str(fallback),
+    )
+    reference = subprocess.run(
+        [runtime, str(Path(__file__).resolve()), "--local-reference"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    expected = json.loads(reference.stdout)
     cases = []
-    for expected_label in (0, 1):
-        for row in rows:
-            expected = float(row["ai_probability"])
-            if (
-                int(row["label"]) != expected_label
-                or int(expected >= manifest["threshold"]) != expected_label
-            ):
-                continue
-            path = ROOT / "data/raw" / row["relative_path"]
-            if path.stat().st_size > 4 * 1024**2:
-                continue
-            with Image.open(path) as image:
-                if image.width * image.height > 4_000_000 or image.format not in (
-                    "JPEG",
-                    "PNG",
-                ):
-                    continue
-                extension = ".png" if image.format == "PNG" else ".jpg"
-            response = session.post(
-                base_url + "/predict",
-                headers=headers,
-                files={"image": ("validation" + extension, path.read_bytes())},
-                timeout=(10, 60),
-                allow_redirects=False,
-            )
-            response.raise_for_status()
-            result = response.json()
-            error = abs(expected - result["ai_probability"])
-            assert error < 1e-4
-            assert result["label"] == ("ai_generated" if expected_label else "real")
-            assert result["model"]["sha256"] == manifest["model_sha256"]
-            assert result["threshold"] == manifest["threshold"]
-            cases.append(
-                {
-                    "validation_class": expected_label,
-                    "response": result,
-                    "absolute_probability_error": error,
-                    "http_status": response.status_code,
-                }
-            )
-            break
-        else:
-            raise RuntimeError("No eligible validation sample for remote verification")
+    for name, data in synthetic_images().items():
+        response = session.post(
+            base_url + "/predict",
+            headers=headers,
+            files={"image": ("synthetic-" + name + ".png", data)},
+            timeout=(10, 60),
+            allow_redirects=False,
+        )
+        response.raise_for_status()
+        result = response.json()
+        error = abs(expected[name]["ai_probability"] - result["ai_probability"])
+        assert error < 1e-4
+        assert result["label"] == expected[name]["label"]
+        assert result["model"]["sha256"] == manifest["model_sha256"]
+        assert result["threshold"] == manifest["threshold"]
+        cases.append(
+            {
+                "synthetic_image": name,
+                "response": result,
+                "absolute_probability_error": error,
+                "http_status": response.status_code,
+            }
+        )
     checks = {
         "unauthenticated": session.post(
             base_url + "/predict", timeout=30, allow_redirects=False
@@ -124,6 +139,7 @@ def main():
         "health": health_data,
         "prediction_checks": cases,
         "rejection_checks": checks,
+        "dataset_images_uploaded": False,
         "test_set_used": False,
         "local_history_used": False,
     }
@@ -135,4 +151,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:] == ["--local-reference"]:
+        print(json.dumps(local_reference()))
+    else:
+        main()

@@ -1,0 +1,112 @@
+{
+  "checked_at_utc": "2026-10-24T18:36:55.987035+00:00",
+  "provider": "Vercel",
+  "plan": "hobby",
+  "base_url": "https://23l-0907-a2-ops-api.vercel.app",
+  "health": {
+    "model": {
+      "format": "tflite-float32",
+      "name": "23L-0907_A2_Ops",
+      "sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+      "source_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "prediction_checks": [
+    {
+      "synthetic_image": "red",
+      "response": {
+        "ai_probability": 0.07829027622938156,
+        "confidence": 0.9217097237706184,
+        "image": {
+          "filename": "synthetic-red.png",
+          "height": 96,
+          "width": 160
+        },
+        "label": "real",
+        "model": {
+          "format": "tflite-float32",
+          "name": "23L-0907_A2_Ops",
+          "sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+          "source_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+          "threshold": 0.6196606457233429,
+          "version": "2"
+        },
+        "threshold": 0.6196606457233429
+      },
+      "absolute_probability_error": 0.0,
+      "http_status": 200
+    },
+    {
+      "synthetic_image": "blue",
+      "response": {
+        "ai_probability": 0.10784988850355148,
+        "confidence": 0.8921501114964485,
+        "image": {
+          "filename": "synthetic-blue.png",
+          "height": 96,
+          "width": 160
+        },
+        "label": "real",
+        "model": {
+          "format": "tflite-float32",
+          "name": "23L-0907_A2_Ops",
+          "sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+          "source_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+          "threshold": 0.6196606457233429,
+          "version": "2"
+        },
+        "threshold": 0.6196606457233429
+      },
+      "absolute_probability_error": 0.0,
+      "http_status": 200
+    },
+    {
+      "synthetic_image": "white",
+      "response": {
+        "ai_probability": 0.019069047644734383,
+        "confidence": 0.9809309523552656,
+        "image": {
+          "filename": "synthetic-white.png",
+          "height": 96,
+          "width": 160
+        },
+        "label": "real",
+        "model": {
+          "format": "tflite-float32",
+          "name": "23L-0907_A2_Ops",
+          "sha256": "58bd282bcf44bc025c8c844410f0a682cbe2c003676932eff9b43fa66a066128",
+          "source_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+          "threshold": 0.6196606457233429,
+          "version": "2"
+        },
+        "threshold": 0.6196606457233429
+      },
+      "absolute_probability_error": 0.0,
+      "http_status": 200
+    }
+  ],
+  "rejection_checks": {
+    "unauthenticated": 401,
+    "missing_file": 400,
+    "unsupported_file": 415,
+    "pixel_limit": 413
+  },
+  "dataset_images_uploaded": false,
+  "test_set_used": false,
+  "local_history_used": false,
+  "source_commit": "bbcdc7601816447aaafbba4cadee17837043b334",
+  "deployment_id": "dpl_9EYGHQ9VHeqjgrYr3jRiQCg9CWrc",
+  "deployment_status": "READY",
+  "region": "fra1",
+  "ci_run": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40121055764",
+  "runtime_error_scan": "No error or fatal logs for the active deployment after verification",
+  "automated_tests": {
+    "passed": 93,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

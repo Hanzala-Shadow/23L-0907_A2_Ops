@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-24T18:39:21.288016+00:00",
+  "local_health": "ok",
+  "history_rows": 11,
+  "original_rows_verified_unchanged": 11,
+  "containers_restarted": false,
+  "champion_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+  "policy_sha256": "e8b66b4183eb83a25bf541e76ba42092e2f1d69e31eabb2f6065ded2a9ddeb3c",
+  "free_disk_gib": 2.729888916015625,
+  "required_reserve_gib": 2,
+  "local_inference_uses_cloud": false
+}
