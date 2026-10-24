@@ -2,7 +2,6 @@
 
 import argparse
 import binascii
-import http.cookiejar
 import json
 import math
 import struct
@@ -11,9 +10,9 @@ import zlib
 from datetime import UTC, datetime
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.error import HTTPError
 from urllib.parse import urlparse
-from urllib.request import HTTPCookieProcessor, Request, build_opener
+
+import requests
 
 
 class UploadForm(HTMLParser):
@@ -71,17 +70,17 @@ def main():
     base = args.base_url.rstrip("/")
     if urlparse(base).hostname not in ("localhost", "127.0.0.1"):
         parser.error("CI checks are limited to a local disposable stack")
-    client = build_opener(HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    client = requests.Session()
 
     def request(path, data=None, headers=None):
-        try:
-            response = client.open(
-                Request(base + path, data=data, headers=headers or {}), timeout=20
-            )
-        except HTTPError as error:
-            response = error
-        with response:
-            return response.status, response.read()
+        with client.request(
+            "POST" if data is not None else "GET",
+            base + path,
+            data=data,
+            headers=headers,
+            timeout=20,
+        ) as response:
+            return response.status_code, response.content
 
     status, data = request("/health")
     health = json.loads(data)

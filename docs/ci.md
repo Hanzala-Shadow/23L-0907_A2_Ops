@@ -17,7 +17,9 @@ installing DVC, MLflow or dataset-download tools that the tests do not require.
 `Docker build and Compose checks` runs after the test job succeeds. It validates
 the Dockerfile, builds the real serving image and starts the production Compose
 configuration with a small deterministic Keras fixture and a new PostgreSQL
-volume. Red and blue synthetic PNGs exercise both labels and preprocessing.
+volume. Its small HTTP client uses Requests with versions constrained by the
+training lock, including support for early oversized-upload responses.
+Red and blue synthetic PNGs exercise both labels and preprocessing.
 Unsupported text, corrupt PNG and oversized uploads exercise rejection paths.
 The check reads history to confirm all five requests were logged. It then removes
 and recreates both containers and verifies the same records remain available.
