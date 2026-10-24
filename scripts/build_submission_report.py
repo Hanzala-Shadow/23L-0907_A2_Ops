@@ -49,6 +49,8 @@ def main():
     styles["BodyText"].fontSize = 10
     styles["BodyText"].leading = 14
     styles["BodyText"].spaceAfter = 8
+    styles["BodyText"].allowWidows = 0
+    styles["BodyText"].allowOrphans = 0
     styles["Heading1"].fontSize = 21
     styles["Heading1"].leading = 26
     styles["Heading1"].textColor = colors.HexColor("#16394c")
@@ -66,6 +68,11 @@ def main():
         )
     )
     styles.add(ParagraphStyle("Cell", fontName="Body", fontSize=8, leading=10.5))
+    styles.add(
+        ParagraphStyle(
+            "Reference", fontName="Body", fontSize=7.6, leading=10, spaceAfter=5
+        )
+    )
     styles.add(
         ParagraphStyle(
             "CodeBlock",
@@ -120,7 +127,10 @@ def main():
                 ]
             )
         )
-        story.extend([t, Spacer(1, 10)])
+        if len(data) <= 8:
+            story.append(KeepTogether([t, Spacer(1, 10)]))
+        else:
+            story.extend([t, Spacer(1, 10)])
 
     def figure(path, caption, max_height=300):
         nonlocal figure_number
@@ -1200,7 +1210,7 @@ def main():
             "https://learning.postman.com/docs/postman-cli/postman-cli-run-collection",
         ),
     ]:
-        p(f"{escape(label)}: <link href='{url}'>{url}</link>", "Caption")
+        p(f"{escape(label)}: <link href='{url}'>{url}</link>", "Reference")
     p(
         "Detailed task-to-file mapping: docs/assignment-checklist.md. Machine-readable receipts: "
         "reports/data, reports/training, reports/selection, reports/evaluation, reports/registry, "
