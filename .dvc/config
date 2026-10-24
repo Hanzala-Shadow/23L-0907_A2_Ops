@@ -1,6 +1,7 @@
 [cache]
     type = copy
 [core]
-    remote = local
-['remote "local"']
-    url = ../.dvc-storage
+    remote = dagshub
+['remote "dagshub"']
+    url = s3://dvc
+    endpointurl = https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops.s3

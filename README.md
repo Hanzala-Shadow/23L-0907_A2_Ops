@@ -5,8 +5,10 @@ currently contains dataset download, audit, deduplication and split preparation.
 Model training, the Flask application and deployment are the next stages.
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
-contains the code, audit and versioning metadata. Repository access must be
-granted before another user can clone it.
+contains the code, audit and versioning metadata. The private
+[DagsHub repository](https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops)
+mirrors GitHub and provides DVC storage and the MLflow endpoint. Access must be
+granted separately on both services before another user can clone and pull data.
 
 ## Environment
 
@@ -66,17 +68,16 @@ code, audit tables, parameters, DVC pointer and pipeline lockfile.
 
 ```bash
 source .venv/bin/activate
-dvc pull
 python scripts/check_disk.py
+dvc pull -j 2
 dvc repro
 dvc status
 ```
 
-`dvc pull` requires the configured remote storage to be available. The current
-remote is a project-local `.dvc-storage` directory used for push/pull verification;
-it is ignored by Git and is not a shared or off-machine backup. A fresh clone
-needs the same storage or a separately configured shared remote. DagsHub storage
-configuration is pending account authentication.
+The default DVC remote is DagsHub's S3-compatible DVC storage. A fresh clone needs
+DagsHub authentication before `dvc pull`; see the
+[credential setup instructions](docs/data-versioning.md#storage). Credentials
+belong in ignored local configuration. Git contains the storage address only.
 
 Split proportions and seed are in `params.json`: 70% training, 15% validation,
 15% test, seed 42. Each class is ranked by a seeded SHA-256 key. Integer counts

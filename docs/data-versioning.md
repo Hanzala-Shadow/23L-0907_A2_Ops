@@ -60,13 +60,13 @@ source .venv/bin/activate
 python scripts/check_disk.py
 dvc status
 dvc repro
-dvc push
+dvc push -j 2
 ```
 
 To restore missing data or split lists from the configured remote:
 
 ```bash
-dvc pull
+dvc pull -j 2
 ```
 
 To switch to a committed data version, first save unrelated work, check out the
@@ -84,24 +84,64 @@ status were clean after the push.
 
 ## Storage
 
-The default remote is `.dvc-storage` inside this project. It provides a local
-push/pull exercise and is ignored by Git. It is on the same filesystem as the
-workspace and cache, so it does not protect against disk loss and is not
-available to GitHub users who clone the code. Configure a DagsHub or other
-shared remote before sharing a clone-and-pull workflow.
+The default remote, `dagshub`, uses `s3://dvc` at
+`https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops.s3`. This is DagsHub's DVC
+object store; its separate general-purpose bucket is not used for this dataset.
+The repository is private and connected to the matching GitHub repository.
+Push code and DVC metadata to GitHub; DagsHub syncs those Git commits. Upload
+dataset contents separately with `dvc push -j 2`.
+
+The S3 adapter is included in the locked development environment. On a new
+machine, obtain access to both private repositories, clone GitHub, install the
+locked requirements, and authenticate with the DagsHub client:
+
+```bash
+source .venv/bin/activate
+umask 077
+dagshub login
+python - <<'PY'
+import os
+from pathlib import Path
+
+from dagshub.auth import get_token
+from dagshub.common import config
+from dvc.config import Config
+
+token = get_token(fail_if_no_token=True)
+with Config(dvc_dir=".dvc").edit(level="local") as local:
+    remote = local.setdefault("remote", {}).setdefault("dagshub", {})
+    remote["access_key_id"] = token
+    remote["secret_access_key"] = token
+os.chmod(".dvc/config.local", 0o600)
+cache = Path(config.cache_location)
+if cache.exists():
+    cache.chmod(0o600)
+PY
+python scripts/check_disk.py
+dvc pull -j 2
+dvc status
+```
+
+The authentication token is stored in `.dvc/config.local` and the client's local
+credential cache. Neither belongs in Git. Reauthorize and repeat this setup when
+the token expires. `.env.example` records the MLflow address and username; keep
+any MLflow password or token in an ignored environment file or process environment.
 
 The cache uses copy mode. Workspace files do not share writable inodes with
-cache objects. The cache and remote each require approximately one dataset
-copy; split lists are small text files and do not duplicate images.
+cache objects. The workspace and local cache each require approximately one
+dataset copy; split lists are small text files and do not duplicate images.
 
 Keep at least 2 GiB free. Before copying data, allow for both the expected new
 storage and a safety margin. Never prune unrelated Docker volumes, other
-projects or the DVC remote to make room. A future shared remote can replace the
-local copy after its contents have been uploaded and verified.
+projects or the DagsHub remote to make room. The temporary `.dvc-storage` backup
+can be removed only after the DagsHub upload and an independent restore are
+verified. A fresh restore with an empty cache needs about 1 GiB for the cache
+and workspace, in addition to the 2 GiB reserve and a safety margin.
 
 Local command logs and restoration evidence are kept outside Git under
 `reports/versioning`. This directory is for terminal/report evidence and may
 include machine-specific paths.
 
 See the DVC documentation for [remote storage configuration](https://doc.dvc.org/command-reference/remote/add)
-and [pipeline and lockfile fields](https://doc.dvc.org/user-guide/project-structure/dvcyaml-files).
+and [pipeline and lockfile fields](https://doc.dvc.org/user-guide/project-structure/dvcyaml-files),
+and DagsHub's [DVC storage setup](https://dagshub.com/docs/feature_guide/dagshub_storage/).
