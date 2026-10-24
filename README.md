@@ -3,7 +3,9 @@
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
 contains dataset download, audit, deduplication, split preparation and CPU
 training pipelines for a custom CNN and MobileNetV2. The Flask application and
-deployment are later stages.
+deployment are later stages. An eight-trial Keras Tuner search varies learning
+rate, dropout and the number of unfrozen backbone layers; see
+[tuning instructions](docs/tuning.md).
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private

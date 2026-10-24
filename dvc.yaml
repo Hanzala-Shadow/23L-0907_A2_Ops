@@ -1,4 +1,39 @@
 stages:
+  tune_mobilenet:
+    cmd: python -m scripts.tune_mobilenet
+    deps:
+      - scripts/tune_mobilenet.py
+      - scripts/train_cnn.py
+      - scripts/prepare_splits.py
+      - visionguard/__init__.py
+      - visionguard/cnn.py
+      - visionguard/pipeline.py
+      - visionguard/preprocessing.py
+      - visionguard/transfer.py
+      - visionguard/transfer_reporting.py
+      - visionguard/tuning.py
+      - requirements/locked.txt
+      - reports/data/image_manifest.csv
+      - data/raw
+      - data/splits
+      - models/mobilenetv2_frozen
+      - reports/training/mobilenetv2_frozen/run.json
+      - reports/training/cnn_baseline/metrics.json
+      - reports/training/cnn_baseline/run.json
+      - reports/training/cnn_baseline/validation_predictions.csv
+      - reports/training/mobilenetv2_frozen/metrics.json
+      - reports/training/mobilenetv2_frozen/validation_predictions.csv
+      - reports/training/mobilenetv2_finetuned/metrics.json
+      - reports/training/mobilenetv2_finetuned/run.json
+      - reports/training/mobilenetv2_finetuned/validation_predictions.csv
+    params:
+      - params.json:
+          - preprocessing
+          - tuning
+    outs:
+      - models/mobilenetv2_tuned
+      - reports/training/keras_tuner:
+          cache: false
   prepare_splits:
     cmd: python3 scripts/prepare_splits.py
     deps:
