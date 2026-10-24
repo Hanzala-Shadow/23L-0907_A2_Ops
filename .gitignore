@@ -9,9 +9,6 @@ __pycache__/
 .dvc/config.local
 .dvc/cache/
 .dvc/tmp/
-/data/*
-!/data/.gitignore
-!/data/*.dvc
 .dvc-storage/
 models/
 mlruns/
