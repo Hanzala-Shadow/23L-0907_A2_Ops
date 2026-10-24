@@ -1,0 +1,24 @@
+{
+  "health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 3.028,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "history_rows": 11,
+  "model_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+  "host_free_gib": 3.028034210205078,
+  "reserve_gib": 2
+}

@@ -1,0 +1,91 @@
+{
+  "repository": "Hanzala-Shadow/23L-0907_A2_Ops",
+  "run_id": 40117744561,
+  "run_url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40117744561",
+  "commit": "a7ffaeb4aba94112d2f38ab3cf0a219300917dd1",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 120942491230,
+      "name": "Lint and tests",
+      "conclusion": "success",
+      "url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40117744561/job/120942491230"
+    },
+    {
+      "id": 120942725432,
+      "name": "Docker build and Compose checks",
+      "conclusion": "success",
+      "url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40117744561/job/120942725432"
+    }
+  ],
+  "pytest": {
+    "tests": "77",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "23.418"
+  },
+  "container_checks": {
+    "checked_at_utc": "2026-10-24T17:50:16.855215+00:00",
+    "fixture": "synthetic",
+    "requests": [
+      {
+        "id": "44220cd5-dccb-43f3-b417-668859b4d42e",
+        "status": 201,
+        "label": "real"
+      },
+      {
+        "id": "0c209d1b-96c0-4b88-bb27-c07e8f20f649",
+        "status": 201,
+        "label": "ai_generated"
+      },
+      {
+        "id": "88abd300-bbc3-46d3-b98e-8ab23abafab0",
+        "status": 415,
+        "label": null
+      },
+      {
+        "id": "e7ee25ad-d478-4f99-a922-12e7e34c5db2",
+        "status": 400,
+        "label": null
+      },
+      {
+        "id": "028e0551-7a1d-4956-b2c3-1bc8e20924c7",
+        "status": 413,
+        "label": null
+      }
+    ],
+    "history_rows": 5,
+    "recreation_verified": true,
+    "health": {
+      "database": {
+        "backend": "postgresql",
+        "status": "ok"
+      },
+      "debug": false,
+      "disk": {
+        "free_gib": 11.154,
+        "reserve_gib": 2.0
+      },
+      "model": {
+        "loaded": true,
+        "name": "23L-0907_A2_Ops-ci",
+        "threshold": 0.62,
+        "version": "synthetic"
+      },
+      "status": "ok"
+    },
+    "test_images_used": false
+  },
+  "artifacts_retention_days": 1,
+  "earlier_attempts": [
+    {
+      "run_id": 40117242007,
+      "result": "Docker built and started; urllib smoke client lost the early 413 response."
+    },
+    {
+      "run_id": 40117570821,
+      "result": "Workflow YAML rejected the colon-containing pip option in a plain scalar; moved the command to a block."
+    }
+  ]
+}

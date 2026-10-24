@@ -1,0 +1,48 @@
+{
+  "repository": "Hanzala-Shadow/23L-0907_A2_Ops-ci-lab",
+  "visibility": "private",
+  "red_run": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops-ci-lab/actions/runs/40116974037",
+  "green_run": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops-ci-lab/actions/runs/40117054547",
+  "jobs": [
+    {
+      "job_id": 120940157376,
+      "python": "3.11",
+      "state": "red",
+      "evidence": [
+        "2026-10-24T17:37:44.1326377Z Successfully set up CPython (3.11.17)",
+        "2026-10-24T17:37:47.0399503Z >       assert add(2, 2) == 5",
+        "2026-10-24T17:37:47.0399939Z E       assert 4 == 5",
+        "2026-10-24T17:37:47.0502965Z 1 failed in 0.03s"
+      ]
+    },
+    {
+      "job_id": 120940157560,
+      "python": "3.12",
+      "state": "red",
+      "evidence": [
+        "2026-10-24T17:37:44.1449376Z Successfully set up CPython (3.12.15)",
+        "2026-10-24T17:37:46.6708139Z >       assert add(2, 2) == 5",
+        "2026-10-24T17:37:46.6710394Z E       assert 4 == 5",
+        "2026-10-24T17:37:46.6807894Z 1 failed in 0.02s"
+      ]
+    },
+    {
+      "job_id": 120940397357,
+      "python": "3.11",
+      "state": "green",
+      "evidence": [
+        "2026-10-24T17:38:50.9126135Z Successfully set up CPython (3.11.17)",
+        "2026-10-24T17:38:55.5077237Z 1 passed in 0.00s"
+      ]
+    },
+    {
+      "job_id": 120940397159,
+      "python": "3.12",
+      "state": "green",
+      "evidence": [
+        "2026-10-24T17:38:50.8088303Z Successfully set up CPython (3.12.15)",
+        "2026-10-24T17:38:56.0967084Z 1 passed in 0.00s"
+      ]
+    }
+  ]
+}

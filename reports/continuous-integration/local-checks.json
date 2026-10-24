@@ -1,0 +1,18 @@
+{
+  "checked_at_utc": "2026-10-24T17:41:42.433659+00:00",
+  "pytest": {
+    "tests": "77",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "50.298"
+  },
+  "lint": "passed",
+  "format": "passed",
+  "repository_content": "passed",
+  "free_gib": 3.0284423828125,
+  "reserve_gib": 2,
+  "test_images_used": false,
+  "local_docker_build_performed": false,
+  "early_413_response_verified": true
+}
