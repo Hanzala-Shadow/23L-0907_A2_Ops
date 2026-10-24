@@ -1,0 +1,27 @@
+{
+  "database_container_recreated": true,
+  "old_database_container": "e0a54b578759",
+  "new_database_container": "31037d11dd35",
+  "outage_http_status": 503,
+  "recovered_http_status": 200,
+  "gunicorn_master_and_worker_unchanged": true,
+  "gunicorn_process_count": 2,
+  "recovered_health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 3.05,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  }
+}

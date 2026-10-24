@@ -34,6 +34,7 @@ class UploadForm(HTMLParser):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default="http://127.0.0.1:5000")
+    parser.add_argument("--output-dir", default="reports/application")
     parser.add_argument(
         "--verify-only",
         action="store_true",
@@ -45,7 +46,7 @@ def main():
         parser.error("This check is limited to the local demo")
     check_space(ROOT)
     load_dotenv(ROOT / ".env")
-    output = ROOT / "reports/application"
+    output = ROOT / args.output_dir
     output.mkdir(parents=True, exist_ok=True)
     session = requests.Session()
     health = session.get(base + "/health", timeout=10)

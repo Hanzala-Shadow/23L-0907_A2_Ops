@@ -1,0 +1,63 @@
+{
+  "checked_at_utc": "2026-10-24T17:21:09.062900+00:00",
+  "phase": "initial",
+  "base_url": "http://127.0.0.1:5002",
+  "health": {
+    "database": {
+      "backend": "postgresql",
+      "status": "ok"
+    },
+    "debug": false,
+    "disk": {
+      "free_gib": 3.058,
+      "reserve_gib": 2.0
+    },
+    "model": {
+      "loaded": true,
+      "name": "23L-0907_A2_Ops",
+      "threshold": 0.6196606457233429,
+      "version": "2"
+    },
+    "status": "ok"
+  },
+  "web_container": "e87efd3d0f93",
+  "database_container": "e0a54b578759",
+  "history_volume": "23l-0907_a2_ops_postgres_data",
+  "history_rows": 6,
+  "original_rows_verified_unchanged": 6,
+  "model_sha256": "4445d4ab52c7d00020bec974faa01f23fff9935284e1d437cf163791b343e0bd",
+  "policy_sha256": "e8b66b4183eb83a25bf541e76ba42092e2f1d69e31eabb2f6065ded2a9ddeb3c",
+  "model_mount_read_only": true,
+  "root_filesystem_read_only": true,
+  "image_id": "sha256:0487710928fab20e1387de41d04ceaa92808adff4237c12611b1348ae38a30c7",
+  "image_size_bytes": 362707277,
+  "image_audit": {
+    "uid": 10001,
+    "python": "3.12.15",
+    "excluded_files_absent": true,
+    "training_tools_absent": true,
+    "model_not_baked_in": true,
+    "app_files": [
+      "gunicorn.conf.py",
+      "healthcheck.py",
+      "requirements/serving.lock",
+      "visionguard/__init__.py",
+      "visionguard/database.py",
+      "visionguard/inference.py",
+      "visionguard/preprocessing.py",
+      "visionguard/serving.py",
+      "visionguard/static/app.css",
+      "visionguard/static/upload.js",
+      "visionguard/templates/base.html",
+      "visionguard/templates/error.html",
+      "visionguard/templates/history.html",
+      "visionguard/templates/result.html",
+      "visionguard/templates/upload.html",
+      "visionguard/uploads.py",
+      "visionguard/web.py",
+      "wsgi.py"
+    ]
+  },
+  "free_after_gib": 3.0576248168945312,
+  "test_images_used": false
+}

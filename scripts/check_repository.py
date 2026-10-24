@@ -49,6 +49,7 @@ TEXT_SUFFIXES = {
     ".html",
     ".css",
     ".js",
+    ".lock",
 }
 
 
@@ -104,7 +105,11 @@ def main():
         # Read staged bytes, so an unstaged edit cannot hide unwanted content.
         content = git("show", f":{path}")
         suffix = PurePosixPath(path).suffix
-        if suffix in TEXT_SUFFIXES or PurePosixPath(path).name.startswith("."):
+        if (
+            suffix in TEXT_SUFFIXES
+            or PurePosixPath(path).name.startswith(".")
+            or PurePosixPath(path).name == "Dockerfile"
+        ):
             text = content.decode("utf-8", errors="replace")
             if EMOJI.search(text):
                 problems.append(f"Decorative emoji in text: {path}")

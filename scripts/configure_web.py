@@ -21,6 +21,8 @@ def main():
         "POSTGRES_DB": "visionguard",
         "POSTGRES_USER": "visionguard",
         "POSTGRES_PORT": "5433",
+        "POSTGRES_VOLUME_NAME": "23l-0907_a2_ops_postgres_data",
+        "WEB_PORT": "5000",
         "APP_BIND": "127.0.0.1:5000",
         "MAX_UPLOAD_BYTES": "8388608",
         "MAX_IMAGE_PIXELS": "16000000",
@@ -51,6 +53,18 @@ def main():
     if not values.get("DECISION_THRESHOLD"):
         policy = json.loads((ROOT / configured["MODEL_POLICY_PATH"]).read_text())
         updates["DECISION_THRESHOLD"] = str(policy["threshold"])
+    if (
+        not values.get("DATABASE_URL_CONTAINER")
+        or "replace_with_a_local_secret" in values["DATABASE_URL_CONTAINER"]
+    ):
+        updates["DATABASE_URL_CONTAINER"] = URL.create(
+            "postgresql+psycopg",
+            username=configured["POSTGRES_USER"],
+            password=configured["POSTGRES_PASSWORD"],
+            host="db",
+            port=5432,
+            database=configured["POSTGRES_DB"],
+        ).render_as_string(hide_password=False)
     for name, value in updates.items():
         set_key(path, name, value)
     path.chmod(0o600)

@@ -1,0 +1,11 @@
+{
+  "routes": {
+    "/": 200,
+    "/history": 200,
+    "/health": 200,
+    "/result/6cfadcec-5716-4cae-835a-150803b52fe5": 200,
+    "/static/app.css": 200,
+    "/static/upload.js": 200
+  },
+  "all_routes_passed": true
+}

@@ -1,0 +1,8 @@
+{
+  "return_code": 0,
+  "start_free_gib": 4.326862335205078,
+  "minimum_observed_free_gib": 3.058032989501953,
+  "end_free_gib": 3.058032989501953,
+  "reserve_gib": 2,
+  "temporary_port": 5002
+}

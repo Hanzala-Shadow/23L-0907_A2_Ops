@@ -2,8 +2,8 @@
 
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
 contains dataset download, audit, deduplication, split preparation, CPU training
-pipelines, and a Flask image classifier with PostgreSQL history. Deployment is a
-later stage. An eight-trial Keras Tuner search varies learning
+pipelines, and a Flask image classifier with PostgreSQL history and a Docker
+Compose deployment. An eight-trial Keras Tuner search varies learning
 rate, dropout and the number of unfrozen backbone layers; see
 [tuning instructions](docs/tuning.md) and [results](reports/training/tuning-results.md).
 
@@ -16,6 +16,8 @@ The [Flask application guide](docs/web-app.md) covers local setup, upload
 validation, saved results, history and health checks. Start PostgreSQL with
 `docker compose -f compose.postgres.yaml up -d --wait`, then run
 `gunicorn --config gunicorn.conf.py wsgi:app` in the configured environment.
+The [Docker guide](docs/docker.md) covers the guarded image build and Compose
+stack, reusing the champion model and persistent PostgreSQL history.
 
 The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
 contains the code, audit and versioning metadata. The private
@@ -44,8 +46,8 @@ release passed these checks but emits a range warning.
 
 Use `.env.example` as a reference for local `.env` settings. Preserve existing
 credentials when adding service settings, and keep them out of Git. The runtime
-dependency list is separate from development dependencies so the serving image
-will not include training and analysis tools.
+dependency list and pinned serving lock are separate from development dependencies
+so the serving image excludes project training and analysis tools.
 
 ## Dataset
 

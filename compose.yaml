@@ -1,0 +1,52 @@
+name: 23l-0907_a2_ops
+services:
+  db:
+    extends:
+      file: compose.postgres.yaml
+      service: db
+  web:
+    image: visionguard:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:?Run scripts.configure_web first}
+      DATABASE_URL: ${DATABASE_URL_CONTAINER:?Run scripts.configure_web first}
+      MODEL_PATH: /app/models/champion/best.keras
+      MODEL_POLICY_PATH: /app/models/champion/policy.json
+      DECISION_THRESHOLD: ${DECISION_THRESHOLD:?Set the saved champion threshold}
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-8388608}
+      MAX_IMAGE_PIXELS: ${MAX_IMAGE_PIXELS:-16000000}
+      DISK_RESERVE_GIB: ${DISK_RESERVE_GIB:-2}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-5000}:8000"
+    volumes:
+      - type: bind
+        source: ./models/champion
+        target: /app/models/champion
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 2g
+    cpus: 2.0
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+volumes:
+  postgres_data:
+    external: true
+    name: ${POSTGRES_VOLUME_NAME:-23l-0907_a2_ops_postgres_data}

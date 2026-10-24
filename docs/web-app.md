@@ -1,5 +1,8 @@
 # Flask application and PostgreSQL history
 
+The app can also run with PostgreSQL through the [Docker Compose stack](docker.md),
+using the same champion bundle and history volume.
+
 The app reads the local champion bundle from `models/champion/`. It does not
 contact DagsHub during requests. The checkpoint SHA-256, input contract, label
 mapping and saved preprocessing policy are checked at startup. The threshold

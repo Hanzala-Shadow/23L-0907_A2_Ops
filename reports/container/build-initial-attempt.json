@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-24T17:18:00.582214+00:00",
+  "command": "docker compose --progress plain build web",
+  "return_code": 130,
+  "stopped_for_disk": true,
+  "elapsed_seconds": 324.88,
+  "reserve_gib": 2,
+  "stop_free_gib": 2.5,
+  "start_free_gib": 4.656337738037109,
+  "minimum_observed_free_gib": 2.4935073852539062,
+  "end_free_gib": 2.4935073852539062
+}
