@@ -1,8 +1,12 @@
-# VisionGuard
+# 23L-0907_A2_Ops
 
-An image classifier for AI-generated and real-labeled images. The repository
+VisionGuard is an image classifier for AI-generated and real-labeled images. The repository
 currently contains dataset download, audit, deduplication and split preparation.
 Model training, the Flask application and deployment are the next stages.
+
+The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
+contains the code, audit and versioning metadata. Repository access must be
+granted before another user can clone it.
 
 ## Environment
 
@@ -71,8 +75,8 @@ dvc status
 `dvc pull` requires the configured remote storage to be available. The current
 remote is a project-local `.dvc-storage` directory used for push/pull verification;
 it is ignored by Git and is not a shared or off-machine backup. A fresh clone
-needs the same storage or a separately configured shared remote. GitHub and
-DagsHub remotes have not been configured.
+needs the same storage or a separately configured shared remote. DagsHub storage
+configuration is pending account authentication.
 
 Split proportions and seed are in `params.json`: 70% training, 15% validation,
 15% test, seed 42. Each class is ranked by a seeded SHA-256 key. Integer counts
@@ -101,7 +105,7 @@ download caches, and do not copy images into split directories.
 
 ```bash
 python scripts/check_disk.py
-pytest -q
+python -m pytest -q
 ruff check scripts tests
 python scripts/check_repository.py --history
 ```
