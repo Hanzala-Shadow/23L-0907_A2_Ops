@@ -1,0 +1,26 @@
+{
+  "run_id": "932b890056eb403aaefa21905070956d",
+  "experiment_id": "0",
+  "run_url": "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops/experiments/#/experiments/0/runs/932b890056eb403aaefa21905070956d",
+  "git_commit": "fef79320155900edecea0c0b0fb4792965d5bab5",
+  "dvc_raw_md5": "b2cec67839f742df4653f66d4bcbbafb.dir",
+  "data_fingerprint": "ccf9e412522a4da9cb0f9b8d01c5f9e27ba44b30118e3c9f731b21e5d6b2d793",
+  "model_sha256": "012fa407cfeea578ded44b6bc1518419ff4c6c08b296c836502c093e54bcacfb",
+  "label_mapping": {
+    "real": 0,
+    "ai_generated": 1
+  },
+  "test_evaluated": false,
+  "model_roundtrip": "passed",
+  "manual_logging": true,
+  "minimum_free_gib_observed": 5.939201354980469,
+  "free_after_gib": 5.937976837158203,
+  "split_counts": {
+    "train": 681,
+    "validation": 146
+  },
+  "train_class_counts": {
+    "ai_generated": 376,
+    "real": 305
+  }
+}

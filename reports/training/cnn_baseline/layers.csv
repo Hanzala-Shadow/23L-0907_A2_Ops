@@ -1,0 +1,20 @@
+layer,type,output_shape,parameters
+rgb_pixels,InputLayer,"(None, 128, 128, 3)",0
+rescale,Rescaling,"(None, 128, 128, 3)",0
+training_augmentation,Sequential,"(None, 128, 128, 3)",0
+conv_1,Conv2D,"(None, 128, 128, 16)",432
+batch_norm_1,BatchNormalization,"(None, 128, 128, 16)",64
+relu_1,ReLU,"(None, 128, 128, 16)",0
+pool_1,MaxPooling2D,"(None, 64, 64, 16)",0
+conv_2,Conv2D,"(None, 64, 64, 32)",4608
+batch_norm_2,BatchNormalization,"(None, 64, 64, 32)",128
+relu_2,ReLU,"(None, 64, 64, 32)",0
+pool_2,MaxPooling2D,"(None, 32, 32, 32)",0
+conv_3,Conv2D,"(None, 32, 32, 64)",18432
+batch_norm_3,BatchNormalization,"(None, 32, 32, 64)",256
+relu_3,ReLU,"(None, 32, 32, 64)",0
+pool_3,MaxPooling2D,"(None, 16, 16, 64)",0
+global_pool,GlobalAveragePooling2D,"(None, 64)",0
+head,Dense,"(None, 64)",4160
+dropout,Dropout,"(None, 64)",0
+ai_probability,Dense,"(None, 1)",65

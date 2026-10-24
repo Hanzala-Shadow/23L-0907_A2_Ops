@@ -197,7 +197,7 @@ def main():
     model = build_cnn(preprocessing, config)
     lines = []
     model.summary(print_fn=lambda value: lines.append(value))
-    (output / "model_summary.txt").write_text("\n".join(lines) + "\n")
+    (output / "model_summary.txt").write_text("\n".join(lines).rstrip() + "\n")
     with (output / "layers.csv").open("w", newline="") as target:
         writer = csv.writer(target, lineterminator="\n")
         writer.writerow(["layer", "type", "output_shape", "parameters"])
@@ -308,6 +308,8 @@ def main():
             callbacks=callbacks,
             verbose=2,
         ).history
+        history_path = output / "history.csv"
+        history_path.write_bytes(history_path.read_bytes().replace(b"\r\n", b"\n"))
         check_space(ROOT, args.reserve_gib)
         best_epoch = int(np.argmin(history["val_loss"])) + 1
         best = tf.keras.models.load_model(model_dir / "best.keras")

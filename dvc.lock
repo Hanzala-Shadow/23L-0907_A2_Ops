@@ -29,3 +29,70 @@ stages:
       md5: 97515564759d6584cc1acdc8bd30fe93.dir
       size: 131561
       nfiles: 5
+  train_cnn:
+    cmd: python -m scripts.train_cnn
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: b2cec67839f742df4653f66d4bcbbafb.dir
+      size: 503783378
+      nfiles: 975
+    - path: data/splits
+      hash: md5
+      md5: 97515564759d6584cc1acdc8bd30fe93.dir
+      size: 131561
+      nfiles: 5
+    - path: reports/data/image_manifest.csv
+      hash: md5
+      md5: fae4a0ca90a49528226e966b0171d580
+      size: 184433
+    - path: requirements/locked.txt
+      hash: md5
+      md5: 454e5ab9b4396d41a771946c973aea11
+      size: 3833
+    - path: scripts/prepare_splits.py
+      hash: md5
+      md5: d881854b13eed441d80217ddad336b5f
+      size: 9613
+    - path: scripts/train_cnn.py
+      hash: md5
+      md5: d29680b23e7f3c97c2b708b7fffc0842
+      size: 17049
+    - path: visionguard
+      hash: md5
+      md5: e0becbe258fac4778734f091102d6399.dir
+      size: 6367
+      nfiles: 4
+    params:
+      params.json:
+        cnn_baseline:
+          seed: 42
+          epochs: 20
+          filters:
+          - 16
+          - 32
+          - 64
+          dense_units: 64
+          dropout: 0.3
+          learning_rate: 0.001
+          early_stopping_patience: 5
+          lr_patience: 2
+          augmentation:
+            rotation: 0.05
+            zoom: 0.1
+        preprocessing:
+          policy: rgb-white-letterbox-v1
+          image_size: 128
+          batch_size: 16
+          cache_in_memory: true
+    outs:
+    - path: models/cnn_baseline
+      hash: md5
+      md5: 5020938841e460d549a40750128d5da9.dir
+      size: 424646
+      nfiles: 2
+    - path: reports/training/cnn_baseline
+      hash: md5
+      md5: 0d328fcf4ee6ddb9d315cc4ff029a6fb.dir
+      size: 1293452
+      nfiles: 12
