@@ -108,8 +108,13 @@ from dagshub.common import config
 from dvc.config import Config
 
 token = get_token(fail_if_no_token=True)
-with Config(dvc_dir=".dvc").edit(level="local") as local:
+dvc = Config(dvc_dir=".dvc")
+shared = dvc["remote"]["dagshub"]
+with dvc.edit(level="local") as local:
+    local.setdefault("core", {})["remote"] = "dagshub"
     remote = local.setdefault("remote", {}).setdefault("dagshub", {})
+    remote["url"] = shared["url"]
+    remote["endpointurl"] = shared["endpointurl"]
     remote["access_key_id"] = token
     remote["secret_access_key"] = token
 os.chmod(".dvc/config.local", 0o600)
@@ -126,6 +131,10 @@ The authentication token is stored in `.dvc/config.local` and the client's local
 credential cache. Neither belongs in Git. Reauthorize and repeat this setup when
 the token expires. `.env.example` records the MLflow address and username; keep
 any MLflow password or token in an ignored environment file or process environment.
+
+Run this setup on `main` before switching to `data-v1` or `splits-v1`. Those
+initial tags predate the DagsHub configuration. The local remote settings remain
+available across checkouts, so `dvc pull` can restore their data from DagsHub.
 
 The cache uses copy mode. Workspace files do not share writable inodes with
 cache objects. The workspace and local cache each require approximately one
