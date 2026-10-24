@@ -1,0 +1,7 @@
+[project]
+name = "23l-0907-a2-ops-api"
+version = "1.0.0"
+requires-python = ">=3.12,<3.13"
+
+[tool.vercel]
+entrypoint = "cloud.wsgi:app"

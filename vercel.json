@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "flask",
+  "fluid": true,
+  "regions": ["fra1"],
+  "buildCommand": "python scripts/fetch_cloud_model.py",
+  "functions": {
+    "cloud/wsgi.py": {
+      "maxDuration": 60,
+      "includeFiles": "models/cloud-api/**",
+      "excludeFiles": "{data/**,reports/**,tests/**,models/champion/**,models/*.dvc,.env*,.dvc/**,docs/**}"
+    }
+  },
+  "git": {"deploymentEnabled": false}
+}

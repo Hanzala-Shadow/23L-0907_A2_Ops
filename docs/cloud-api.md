@@ -1,6 +1,6 @@
 # Cloud model API
 
-The cloud API runs on Render's free Python web service: 0.1 CPU and 512 MB RAM.
+The cloud API runs on Vercel Hobby with Python 3.12 and CPU-only inference.
 It uses a float32 LiteRT export of champion registry version 2, with the saved
 threshold `0.6196606457233429`. The original Keras checkpoint, local Flask app,
 PostgreSQL database, and history volume stay on this machine.
@@ -39,30 +39,41 @@ This writes `.env.cloud` with mode 0600. Keep this file local. The signed URL
 expires in about one hour and grants download access only to that release
 asset. The GitHub account token and DagsHub credentials stay on this machine.
 
-## Render settings
+## Vercel Hobby deployment
 
-Connect only `Hanzala-Shadow/23L-0907_A2_Ops`, branch `main`. Use `render.yaml`
-as the configuration reference, or create a Blueprint from that file:
+The existing `hanzala-shadows-projects` account uses the free Hobby plan.
+The project is `23l-0907-a2-ops-api`, region Frankfurt (`fra1`). Hobby includes
+2 GB RAM per function; this runtime measured about 179 MiB in local validation
+checks. The Python bundle stays below Vercel's 500 MB limit. Inference loads
+once per warm function instance; scale-out or a cold start creates another
+independent instance. Uploaded images and history are not stored in the API.
 
-- Service: `23l-0907-a2-ops-api`, Python runtime, Frankfurt, **Free** plan.
-- Python: `3.12.15`; build installs `requirements/cloud.lock`, then runs
-  `python scripts/fetch_cloud_model.py`.
-- Start: `gunicorn --config cloud/gunicorn.conf.py cloud.wsgi:app`.
-- Health check: `/health`; one worker, two threads, one inference at a time.
-- Set `MODEL_BUNDLE_URL` and `MODEL_API_KEY` from `.env.cloud` as secret
-  environment variables. Set `OPENBLAS_NUM_THREADS=1`, `OMP_NUM_THREADS=1`,
-  and `PYTHONDONTWRITEBYTECODE=1`.
-- Disable automatic deploys. Refresh `MODEL_BUNDLE_URL` before each manual
-  build, then deploy a commit whose GitHub Actions checks have passed.
+`pyproject.toml` points Vercel at `cloud.wsgi:app`; `requirements.txt` includes
+the pinned lightweight runtime. `vercel.json` downloads and verifies the model
+during the cloud build and includes it in the function bundle. The API needs
+no database connection, TensorFlow installation, or training credentials.
 
-Builds download and verify the model once. The built service retains the model
-across restarts; uploaded images and prediction history are not stored in the
-cloud API. The API needs no database connection or training credentials.
+Deployment uploads only the committed serving modules, dependency files,
+manifest, downloader, and Vercel configuration through the authenticated
+Vercel integration. Dataset files, local settings, training code, reports,
+Git metadata, and agent files are excluded. The model is fetched from the
+private release through its temporary signed URL.
 
-Render's free service sleeps after 15 minutes without inbound traffic. The
-next request can take roughly a minute to wake it. It has 750 free instance
-hours per workspace per month and limited build minutes and bandwidth. Do not
-add billing details or upgrade the service for this assignment.
+Set `MODEL_BUNDLE_URL` and `MODEL_API_KEY` as encrypted Vercel production
+variables. Also set `OPENBLAS_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, and
+`PYTHONDONTWRITEBYTECODE=1`. Keep these secrets in ignored `.env.cloud`
+locally. Each deployment must use a fresh signed download URL and a commit
+whose GitHub Actions checks have passed. Automatic Git deployments are off.
+
+Hobby is free for personal, non-commercial projects. Exceeding its usage
+allowance pauses the affected feature until its quota resets. No Pro trial,
+paid add-ons, or billing details are needed for this assignment. The API can
+have a cold-start delay after inactivity. Request bodies are limited by Vercel
+to 4.5 MB; the API uses a lower 4 MiB file limit plus multipart headroom.
+
+The initial Render Free attempt requested card verification even with the
+$0 plan selected. No card was added and no Render service was created.
+`render.yaml` remains an optional configuration reference.
 
 ## HTTP contract
 
@@ -83,7 +94,17 @@ or Postman. Keep the key out of URLs, browser JavaScript, screenshots, shell
 history, and source control. The local Flask app continues using its local
 champion until a separate integration step changes that behavior.
 
-Provider references: [free service limits](https://render.com/docs/free),
-[compute plans](https://render.com/docs/compute-plans),
-[Blueprint configuration](https://render.com/docs/blueprint-spec), and
+After setting the deployed origin as `MODEL_API_URL` in `.env.cloud`, run:
+
+```bash
+.venv/bin/python scripts/check_cloud_api.py
+```
+
+This checks health, a real and an AI-generated validation sample, authentication,
+invalid uploads, and the pixel limit. It writes `reports/cloud/deployment.json`
+without keys or signed URLs. It does not use the test set or local history.
+
+Provider references: [Hobby plan](https://vercel.com/docs/plans/hobby),
+[Python limits](https://vercel.com/docs/functions/limitations),
+[Flask deployment](https://vercel.com/docs/frameworks/backend/flask), and
 [LiteRT migration](https://developers.google.com/edge/litert/migration).

@@ -1,0 +1,2 @@
+# Lightweight cloud API dependencies. Training uses requirements/locked.txt.
+-r requirements/cloud.lock
