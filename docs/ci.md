@@ -31,7 +31,9 @@ a populated model directory. The run-specific database volume and test container
 are removed during cleanup, including after a failed check.
 
 Test XML and a small container-check JSON are retained as private Actions
-artifacts for one day. The image and fixture model are not uploaded as artifacts.
+artifacts for one day. The native image and fixture model are not uploaded.
+The checked lightweight client image is saved as the private `cloud-client-image`
+artifact for one day so this constrained machine can import it without rebuilding.
 Runs have bounded job timeouts, and a newer push cancels an older run on the same
 ref. All actions are official GitHub actions pinned to verified full commit SHAs;
 the workflow token has read-only repository permissions and checkout does not

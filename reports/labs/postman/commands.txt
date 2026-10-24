@@ -1,0 +1,34 @@
+2026-10-24T19:31:42.2027485Z Root Health
+2026-10-24T19:31:42.5701247Z   GET https://23l-0907-a2-ops-api.vercel.app/health [200 OK, 626 B, 360 ms]
+2026-10-24T19:31:42.5910607Z   Pass  HTTP 200
+2026-10-24T19:31:42.5921368Z   Pass  Champion ready
+2026-10-24T19:31:42.5978788Z Root Missing key rejected
+2026-10-24T19:31:43.0017369Z   POST https://23l-0907-a2-ops-api.vercel.app/predict [401 Unauthorized, 371 B, 396 ms]
+2026-10-24T19:31:43.0083676Z   Pass  HTTP 401
+2026-10-24T19:31:43.0137111Z Root Generated red
+2026-10-24T19:31:43.2496755Z   POST https://23l-0907-a2-ops-api.vercel.app/predict [200 OK, 774 B, 228 ms]
+2026-10-24T19:31:43.2567165Z   Pass  HTTP 200
+2026-10-24T19:31:43.2587437Z   Pass  Pinned champion and threshold
+2026-10-24T19:31:43.2592463Z   Pass  Consistent score and verdict
+2026-10-24T19:31:43.2637889Z Root Generated blue
+2026-10-24T19:31:43.5854500Z   POST https://23l-0907-a2-ops-api.vercel.app/predict [200 OK, 775 B, 316 ms]
+2026-10-24T19:31:43.5911552Z   Pass  HTTP 200
+2026-10-24T19:31:43.5943209Z   Pass  Pinned champion and threshold
+2026-10-24T19:31:43.5943915Z   Pass  Consistent score and verdict
+2026-10-24T19:31:43.5970581Z Root Generated white
+2026-10-24T19:31:43.8278517Z   POST https://23l-0907-a2-ops-api.vercel.app/predict [200 OK, 777 B, 226 ms]
+2026-10-24T19:31:43.8390962Z   Pass  HTTP 200
+2026-10-24T19:31:43.8407080Z   Pass  Pinned champion and threshold
+2026-10-24T19:31:43.8424191Z   Pass  Consistent score and verdict
+2026-10-24T19:31:43.8452984Z Root Wrong file type rejected
+2026-10-24T19:31:44.2467136Z   POST https://23l-0907-a2-ops-api.vercel.app/predict [415 Unsupported Media Type, 428 B, 398 ms]
+2026-10-24T19:31:44.2523080Z   Pass  HTTP 415
+2026-10-24T19:31:44.2775586Z |                         |             executed |               failed |
+2026-10-24T19:31:44.2777283Z |              iterations |                    1 |                    0 |
+2026-10-24T19:31:44.2778632Z |                requests |                    6 |                    0 |
+2026-10-24T19:31:44.2779955Z |            test-scripts |                    6 |                    0 |
+2026-10-24T19:31:44.2781293Z |      prerequest-scripts |                    0 |                    0 |
+2026-10-24T19:31:44.2782638Z |              assertions |                   13 |                    0 |
+2026-10-24T19:31:44.2784044Z | total run duration: 2 s                                               |
+2026-10-24T19:31:44.2785412Z | total data received: 1.65 KB (approx)                                 |
+2026-10-24T19:31:44.2786909Z | average response time: 320 ms [min: 226 ms, max: 398 ms, s.d.: 71 ms] |

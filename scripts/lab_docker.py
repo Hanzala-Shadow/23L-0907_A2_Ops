@@ -24,10 +24,10 @@ def main():
     transcript = []
     minimum = shutil.disk_usage(ROOT).free
 
-    def run(*args, check=True):
+    def run(*args, check=True, guard=True):
         nonlocal minimum
         minimum = min(minimum, shutil.disk_usage(ROOT).free)
-        if minimum < 2.125 * 1024**3:
+        if guard and minimum < 2.125 * 1024**3:
             raise RuntimeError("Stopping before disk reserve")
         command = ["sudo", "-n", "docker", *args]
         result = subprocess.run(command, capture_output=True, text=True, check=check)
@@ -169,9 +169,9 @@ def main():
         run("ps", "-a", "--filter", "name=visionguard-lab")
     finally:
         for name in [web, db]:
-            run("rm", "-f", name, check=False)
-        run("volume", "rm", volume)
-        run("image", "rm", tag)
+            run("rm", "-f", name, check=False, guard=False)
+        run("volume", "rm", volume, guard=False)
+        run("image", "rm", tag, guard=False)
     assert shutil.disk_usage(ROOT).free >= 2 * 1024**3
     report = {
         "checked_at_utc": datetime.now(UTC).isoformat(),

@@ -1,0 +1,70 @@
+{
+  "checked_at_utc": "2026-10-24T19:31:44.258000+00:00",
+  "tool": "Postman CLI 1.76.0",
+  "runner": "GitHub-hosted ubuntu-24.04 (another network)",
+  "workflow_run": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40125682249",
+  "base_url": "https://23l-0907-a2-ops-api.vercel.app",
+  "requests": 6,
+  "assertions": 13,
+  "failures": 0,
+  "results": [
+    {
+      "name": "Health",
+      "http_status": 200,
+      "response_ms": 360,
+      "assertions": [
+        "HTTP 200",
+        "Champion ready"
+      ]
+    },
+    {
+      "name": "Missing key rejected",
+      "http_status": 401,
+      "response_ms": 396,
+      "assertions": [
+        "HTTP 401"
+      ]
+    },
+    {
+      "name": "Generated red",
+      "http_status": 200,
+      "response_ms": 228,
+      "assertions": [
+        "HTTP 200",
+        "Pinned champion and threshold",
+        "Consistent score and verdict"
+      ]
+    },
+    {
+      "name": "Generated blue",
+      "http_status": 200,
+      "response_ms": 316,
+      "assertions": [
+        "HTTP 200",
+        "Pinned champion and threshold",
+        "Consistent score and verdict"
+      ]
+    },
+    {
+      "name": "Generated white",
+      "http_status": 200,
+      "response_ms": 226,
+      "assertions": [
+        "HTTP 200",
+        "Pinned champion and threshold",
+        "Consistent score and verdict"
+      ]
+    },
+    {
+      "name": "Wrong file type rejected",
+      "http_status": 415,
+      "response_ms": 398,
+      "assertions": [
+        "HTTP 415"
+      ]
+    }
+  ],
+  "dataset_images_uploaded": false,
+  "local_history_used": false,
+  "secrets_in_report": false
+}

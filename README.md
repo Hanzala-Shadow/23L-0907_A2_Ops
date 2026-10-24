@@ -1,5 +1,11 @@
 # 23L-0907_A2_Ops
 
+The final [assignment audit](docs/assignment-checklist.md) maps every rubric ID
+to implementation and evidence. The submission report is
+`output/pdf/23L-0907_VisionGuard.pdf`. The
+[Postman collection](postman/visionguard.postman_collection.json) was checked
+from a separate GitHub-hosted network; results are in `reports/labs/postman/`.
+
 [![CI](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/workflows/ci.yml)
 
 VisionGuard is an image classifier for AI-generated and real-labeled images. The repository

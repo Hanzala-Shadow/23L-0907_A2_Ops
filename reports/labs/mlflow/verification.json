@@ -1,0 +1,39 @@
+{
+  "checked_at_utc": "2026-10-24T19:30:43.275865+00:00",
+  "runs": [
+    {
+      "location": "local",
+      "learning_rate": 0.001,
+      "experiment_id": "1",
+      "run_id": "175fed30d5bb4d04a4df259b369a36b1",
+      "validation_accuracy": 0.5400000214576721,
+      "validation_loss": 1.5769073963165283,
+      "epochs_logged": 2,
+      "model_and_plot_logged": true
+    },
+    {
+      "location": "local",
+      "learning_rate": 0.01,
+      "experiment_id": "1",
+      "run_id": "e8909c2b041a4b328e46194562a0850e",
+      "validation_accuracy": 0.800000011920929,
+      "validation_loss": 0.7173377871513367,
+      "epochs_logged": 2,
+      "model_and_plot_logged": true
+    },
+    {
+      "location": "dagshub",
+      "learning_rate": 0.001,
+      "experiment_id": "0",
+      "run_id": "9d8eecc8305a4520af5675bb344c0ce7",
+      "validation_accuracy": 0.5400000214576721,
+      "validation_loss": 1.5769073963165283,
+      "epochs_logged": 2,
+      "model_and_plot_logged": true
+    }
+  ],
+  "local_tracking_uri": "sqlite database in ignored lab directory",
+  "test_set_used": false,
+  "free_disk_gib": 2.45721435546875,
+  "dagshub_run_independently_verified": true
+}
