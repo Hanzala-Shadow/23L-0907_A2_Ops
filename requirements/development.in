@@ -2,7 +2,7 @@
 keras-tuner==1.4.8
 mlflow==2.22.5
 dagshub>=0.6,<0.8
-dvc>=3.60,<4
+dvc[s3]>=3.60,<4
 numpy>=1.26,<2.2
 pandas>=2.2,<3
 matplotlib>=3.9,<4
