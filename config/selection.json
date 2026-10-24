@@ -1,0 +1,11 @@
+{
+  "model_objective": "validation_loss",
+  "false_positive_cost": 2,
+  "false_negative_cost": 1,
+  "threshold_objective": "minimize 2 * false positives + false negatives on validation",
+  "threshold_tie_break": "fewer false positives, closest to 0.5, then higher threshold",
+  "error_priority": "Calling a real image AI-generated can falsely discredit authentic work. Treat that error as twice as costly as missing an AI image for this demonstration.",
+  "registry_name": "23L-0907_A2_Ops",
+  "registry_alias": "champion",
+  "test_models": ["cnn_baseline", "champion"]
+}
