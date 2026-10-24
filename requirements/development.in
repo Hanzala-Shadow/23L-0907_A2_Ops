@@ -1,0 +1,12 @@
+-r runtime.in
+keras-tuner==1.4.8
+mlflow==2.22.5
+dagshub>=0.6,<0.8
+dvc>=3.60,<4
+numpy>=1.26,<2.2
+pandas>=2.2,<3
+matplotlib>=3.9,<4
+scikit-learn>=1.6,<2
+kaggle>=1.7,<3
+pytest>=8,<10
+ruff>=0.11,<1

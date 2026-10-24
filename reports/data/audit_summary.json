@@ -1,0 +1,95 @@
+{
+  "total_files": 975,
+  "readable_images": 975,
+  "unreadable_files": 0,
+  "unknown_class_files": 0,
+  "total_bytes": 503783378,
+  "unique_file_hashes": 974,
+  "readable_unique_hashes": 974,
+  "duplicate_groups": 1,
+  "duplicate_member_files": 2,
+  "redundant_duplicate_files": 1,
+  "cross_class_duplicate_groups": 0,
+  "dataset_fingerprint_sha256": "ccf9e412522a4da9cb0f9b8d01c5f9e27ba44b30118e3c9f731b21e5d6b2d793",
+  "classes": {
+    "ai_generated": {
+      "total_files": 539,
+      "readable_images": 539,
+      "unreadable_files": 0,
+      "total_bytes": 288073641,
+      "width": {
+        "min": 225,
+        "median": 1024,
+        "max": 6000
+      },
+      "height": {
+        "min": 135,
+        "median": 800,
+        "max": 4001
+      },
+      "file_size_bytes": {
+        "min": 11738,
+        "median": 199760,
+        "max": 5626183
+      },
+      "formats": {
+        "JPEG": 429,
+        "PNG": 110
+      },
+      "colour_modes": {
+        "RGB": 489,
+        "P": 14,
+        "RGBA": 35,
+        "L": 1
+      },
+      "duplicate_member_files": 2,
+      "landscape_images": 369,
+      "portrait_images": 51,
+      "square_images": 119
+    },
+    "real": {
+      "total_files": 436,
+      "readable_images": 436,
+      "unreadable_files": 0,
+      "total_bytes": 215709737,
+      "width": {
+        "min": 183,
+        "median": 920.0,
+        "max": 8495
+      },
+      "height": {
+        "min": 158,
+        "median": 720.0,
+        "max": 7091
+      },
+      "file_size_bytes": {
+        "min": 11311,
+        "median": 144840.0,
+        "max": 10195352
+      },
+      "formats": {
+        "JPEG": 403,
+        "PNG": 33
+      },
+      "colour_modes": {
+        "RGB": 407,
+        "P": 9,
+        "L": 6,
+        "RGBA": 14
+      },
+      "duplicate_member_files": 0,
+      "landscape_images": 307,
+      "portrait_images": 93,
+      "square_images": 36
+    }
+  },
+  "timestamp": "2026-10-24T17:54:11.824327+05:00",
+  "seed": 42,
+  "raw_directory": "data/raw",
+  "free_before_bytes": 7018819584,
+  "free_after_bytes": 7008337920,
+  "required_reserve_bytes": 2147483648,
+  "dimension_statistics": "readable images only, before EXIF orientation",
+  "file_size_statistics": "all audited files",
+  "raw_files_modified": false
+}
