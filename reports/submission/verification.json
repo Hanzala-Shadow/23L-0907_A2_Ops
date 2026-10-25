@@ -1,12 +1,12 @@
 {
-  "checked_at_utc": "2026-10-25T19:42:26.803865+00:00",
+  "checked_at_utc": "2026-10-25T20:40:50.140783+00:00",
   "source_commit": "90b93195d46d58ecfcae174062cf6f5fef8c28bf",
   "report_path": "output/pdf/23L-0907_VisionGuard.pdf",
   "report_validation": {
-    "pdf_sha256": "c9d75d256157f7f3776b3a81b1fb74d9ac2955e1d84bc91f2e6d961aa321becd",
-    "pdf_bytes": 2633739,
+    "pdf_sha256": "3b9f765f6fa2930fc79e44eb68c3256312390b72a4b30f8e22760d3515bf2132",
+    "pdf_bytes": 6038993,
     "pages": 15,
-    "figures": 44,
+    "figures": 45,
     "required_subtask_ids_present": [
       "1.1",
       "1.2",
@@ -42,7 +42,24 @@
     "assistance_disclosure_present": true,
     "all_pages_visually_reviewed": true,
     "configured_secret_scan_passed": true,
-    "previous_report_pages": 41
+    "previous_report_pages": 41,
+    "separate_task_chapter_bookmarks": [
+      "Task 1 - Data and versioning",
+      "Task 2 - Pipeline and CNN",
+      "Task 3 - MLflow and DagsHub",
+      "Task 4 - Flask application",
+      "Task 5 - Database trail",
+      "Task 6 - Docker Compose",
+      "Task 7 - Cloud deployment",
+      "Task 8 - Local-to-cloud integration"
+    ],
+    "all_figures_referenced_in_body": true,
+    "full_resolution_figure_links": 45,
+    "source_links_verified_at_graded_revision": 50,
+    "docker_and_compose_links_present": true,
+    "known_image_output_present": true,
+    "git_ignore_proof_present": true,
+    "native_champion_hashes_rechecked": true
   },
   "source_ci": {
     "url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40127571425",
@@ -102,5 +119,10 @@
     "training_or_test_inference_performed": false,
     "graded_implementation_revision_unchanged": true
   },
-  "report_revision_free_disk_gib": 2.3426551818847656
+  "report_revision_free_disk_gib": 2.304351806640625,
+  "report_evidence_sources": {
+    "ignore_proof": "reports/submission/git-ignore-proof.txt",
+    "native_output": "reports/submission/native-check-output.txt",
+    "native_output_original": "reports/application/verification.json"
+  }
 }

@@ -1,0 +1,6 @@
+23L-0907_A2_Ops | Saved native checks | 2026-10-24T16:52:48.172676+00:00
+Source: reports/application/verification.json; model v2; threshold=0.6196606457
+HTTP 201 | RealArt/RealArt/1010172.jpg
+label=ai_generated; ai_probability=0.7347276210784912
+HTTP 201 | AiArtData/AiArtData/06as5rHi0sgG4W2Tq.png
+label=ai_generated; ai_probability=0.9492709636688232

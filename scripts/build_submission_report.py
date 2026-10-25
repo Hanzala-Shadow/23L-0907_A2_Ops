@@ -19,6 +19,7 @@ from reportlab.platypus import (
     KeepTogether,
     PageBreak,
     Paragraph,
+    Preformatted,
     SimpleDocTemplate,
     Spacer,
     Table,
@@ -28,6 +29,7 @@ from reportlab.platypus import (
 ROOT = Path(__file__).resolve().parents[1]
 WIDTH = 528
 EVIDENCE = "reports/submission/evidence/"
+REPOSITORY = "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops"
 
 
 def read(path):
@@ -37,7 +39,11 @@ def read(path):
 def main():
     if shutil.disk_usage(ROOT).free < 2.125 * 1024**3:
         raise RuntimeError("Keep the 2 GiB reserve plus report headroom")
-    for name, filename in [("Body", "DejaVuSans"), ("Bold", "DejaVuSans-Bold")]:
+    for name, filename in [
+        ("Body", "DejaVuSans"),
+        ("Bold", "DejaVuSans-Bold"),
+        ("Mono", "DejaVuSansMono"),
+    ]:
         pdfmetrics.registerFont(
             TTFont(name, f"/usr/share/fonts/truetype/dejavu/{filename}.ttf")
         )
@@ -77,31 +83,75 @@ def main():
         "small": ParagraphStyle(
             "small", fontName="Body", fontSize=8, leading=11, spaceAfter=6
         ),
+        "console": ParagraphStyle(
+            "console",
+            fontName="Mono",
+            fontSize=6.9,
+            leading=9,
+            backColor=colors.HexColor("#f0f3f5"),
+            borderPadding=5,
+            spaceBefore=3,
+            spaceAfter=8,
+        ),
     }
     story = []
     figures = 0
+    pending_references = []
+    chapter_numbers = set()
     now = datetime.now(ZoneInfo("Asia/Karachi"))
     # Preserve the graded implementation revision when only the report changes.
     commit = read("reports/submission/verification.json")["source_commit"]
     assets = ROOT / "reports/training-runtime/submission/concise-assets"
     assets.mkdir(parents=True, exist_ok=True)
 
-    def p(text, style="body"):
-        story.append(Paragraph(text, styles[style]))
+    def p(text, style="body", evidence_key=None):
+        paragraph = Paragraph(text, styles[style])
+        paragraph.report_text = text
+        paragraph.figure_references = []
+        paragraph.evidence_key = evidence_key
+        story.append(paragraph)
+        if style in {"body", "small"} and pending_references:
+            add_references(paragraph, list(pending_references))
+            pending_references.clear()
+
+    def add_references(paragraph, numbers):
+        refs = sorted({*paragraph.figure_references, *numbers})
+        label = "Figure" if len(refs) == 1 else "Figures"
+        links = ", ".join(f"<link href='#figure-{n}'>{n}</link>" for n in refs)
+        updated = Paragraph(
+            paragraph.report_text + f" ({label} {links}.)", paragraph.style
+        )
+        updated.report_text = paragraph.report_text
+        updated.figure_references = refs
+        updated.evidence_key = paragraph.evidence_key
+        story[story.index(paragraph)] = updated
 
     def h(text):
         p(text, "heading")
 
-    def page(title):
-        if story:
+    def page(title, new_page=True):
+        if story and new_page:
             story.append(PageBreak())
         p(title, "title")
+        if title.startswith("Task "):
+            number = int(title.split()[1])
+            if number not in chapter_numbers:
+                story[-1].chapter_number = number
+                chapter_numbers.add(number)
+
+    def console(path):
+        story.append(
+            Preformatted((ROOT / path).read_text().rstrip(), styles["console"])
+        )
 
     def table(headers, rows, widths=None, compact=False):
-        data = [
-            [Paragraph(escape(str(c)), styles["cell"]) for c in row]
-            for row in [headers, *rows]
-        ]
+        def cell(value):
+            text = escape(str(value))
+            if str(value).startswith(("https://", "http://")):
+                text = f"<link href='{text}'>{text}</link>"
+            return Paragraph(text, styles["cell"])
+
+        data = [[cell(c) for c in row] for row in [headers, *rows]]
         result = Table(data, colWidths=widths, repeatRows=1, hAlign="LEFT")
         result.setStyle(
             TableStyle(
@@ -122,9 +172,43 @@ def main():
         )
         story.extend([result, Spacer(1, 7)])
 
-    def panel(path, caption, width=WIDTH, height=190):
+    def panel(
+        path,
+        caption,
+        width=WIDTH,
+        height=190,
+        reference_key=None,
+        reference_after=False,
+    ):
         nonlocal figures
         figures += 1
+        if reference_after:
+            pending_references.append(figures)
+        elif reference_key:
+            candidates = [
+                item
+                for item in story
+                if getattr(item, "evidence_key", None) == reference_key
+            ]
+            assert len(candidates) == 1
+            add_references(candidates[0], [figures])
+        else:
+            for previous in reversed(story):
+                if isinstance(previous, PageBreak):
+                    break
+                if isinstance(previous, Paragraph) and previous.style.name in {
+                    "body",
+                    "small",
+                }:
+                    add_references(previous, [figures])
+                    break
+            else:
+                previous = None
+            if not (
+                isinstance(previous, Paragraph)
+                and previous.style.name in {"body", "small"}
+            ):
+                pending_references.append(figures)
         source = ROOT / path
         with PILImage.open(source) as original:
             im = original.convert("RGB")
@@ -137,26 +221,42 @@ def main():
                 im = im.crop((0, 0, im.width, min(im.height, bounds[3] + 15)))
         scale = min(width / im.width, height / im.height)
         w, ht = im.width * scale, im.height * scale
-        im.thumbnail((round(w * 3), round(ht * 3)))
         target = assets / f"figure-{figures}.jpg"
-        im.save(target, quality=92, subsampling=0, optimize=True)
+        im.save(target, quality=94, subsampling=0, optimize=True)
         im.close()
         return [
             Image(str(target), width=w, height=ht),
-            Paragraph(f"Figure {figures}. {escape(caption)}", styles["caption"]),
+            Paragraph(
+                f"<a name='figure-{figures}'/><link href='{REPOSITORY}/blob/{commit}/{path}'>"
+                f"Figure {figures}.</link> {escape(caption)}",
+                styles["caption"],
+            ),
         ]
 
-    def figure(path, caption, height=190):
-        story.append(KeepTogether(panel(path, caption, height=height)))
+    def figure(path, caption, height=190, reference_after=False):
+        story.append(
+            KeepTogether(
+                panel(path, caption, height=height, reference_after=reference_after)
+            )
+        )
 
-    def row(items, height=140):
+    def row(items, height=140, reference_after=False):
         gap = 12
         cell_width = (WIDTH - gap * (len(items) - 1)) / len(items)
         cells = []
-        for i, (path, caption) in enumerate(items):
+        for i, (path, caption, *reference_key) in enumerate(items):
             if i:
                 cells.append("")
-            cells.append(panel(path, caption, width=cell_width, height=height))
+            cells.append(
+                panel(
+                    path,
+                    caption,
+                    width=cell_width,
+                    height=height,
+                    reference_key=reference_key[0] if reference_key else None,
+                    reference_after=reference_after,
+                )
+            )
         widths = [cell_width if i % 2 == 0 else gap for i in range(len(cells))]
         result = Table([cells], colWidths=widths, hAlign="LEFT")
         result.setStyle(
@@ -206,6 +306,7 @@ def main():
     p(
         "Tasks 1-8 are covered with the main decisions, results and essential evidence. "
         "Detailed commands, full screenshots and machine-readable receipts remain in the repository; "
+        "figure numbers link to full-resolution originals. PDF bookmarks identify Tasks 1-8. "
         "docs/assignment-checklist.md maps every requirement to its evidence. The optional Grad-CAM "
         "bonus was not attempted."
     )
@@ -228,7 +329,8 @@ def main():
         "An isolated .venv uses Python 3.12.3, TensorFlow CPU 2.19.1, Keras 3.15.1, "
         "Keras Tuner 1.4.8, MLflow 2.22.5 and DVC 3.67.1. TensorFlow detected no GPU. "
         "Pinned requirements, bounded CPU threads and pre-operation disk checks keep execution "
-        "reproducible within the 2 GiB free-space reserve (Figure 1)."
+        "reproducible within the 2 GiB free-space reserve.",
+        evidence_key="environment",
     )
     h("1.2 Dataset audit and splits")
     audit = read("reports/data/audit_summary.json")
@@ -275,14 +377,19 @@ def main():
     h("1.4 DVC storage and toy restore")
     p(
         "The toy CSV has two committed versions on the dvc-lab branch. After checking out the older "
-        "version and deleting both its local data and cache, dvc pull restored the original bytes "
-        "(Figure 2). Its pointer holds the checksum, size and path; large content stays outside Git. "
-        "Project data, splits and model bundles use DagsHub DVC storage; credentials remain ignored."
+        "version and deleting both its local data and cache, dvc pull restored the original bytes. "
+        "Its pointer holds the checksum, size and path; large content stays outside Git. "
+        "Project data, splits and model bundles use DagsHub DVC storage; credentials remain ignored.",
+        evidence_key="dvc",
     )
     row(
         [
-            (shot("environment"), "Recorded versions and GPU check."),
-            (shot("dvc-lab"), "Two toy commits and verified old-version restore."),
+            (shot("environment"), "Recorded versions and GPU check.", "environment"),
+            (
+                shot("dvc-lab"),
+                "Two toy commits and verified old-version restore.",
+                "dvc",
+            ),
         ],
         height=139,
     )
@@ -305,6 +412,7 @@ def main():
             ("reports/data/height_histogram.png", "Image heights by class."),
         ],
         height=135,
+        reference_after=True,
     )
     p(
         "<b>Widths:</b> Both classes span small images to several thousand pixels, with common generation "
@@ -315,6 +423,7 @@ def main():
         "reports/data/file_size_bytes_histogram.png",
         "Per-class file sizes, showing a long tail.",
         height=116,
+        reference_after=True,
     )
     p(
         "File sizes depend on compression and content as well as dimensions. Byte limits alone cannot "
@@ -368,7 +477,7 @@ def main():
     p(
         "The CNN uses pixel/255 normalization, binary cross-entropy and Adam at 0.001. "
         "Accuracy, precision, recall and ROC-AUC expose different error types. Its recorded model "
-        "summary confirms the layer table on the preceding page (Figure 8)."
+        "summary confirms the layer table on the preceding page."
     )
     figure(
         shot("model-summary"),
@@ -517,7 +626,7 @@ def main():
     )
     p(
         "Test contains 147 images (81 AI, 66 real). The champion has TN=51, FP=15, FN=26, TP=55; "
-        "the CNN has TN=56, FP=10, FN=78, TP=3. Figures 12-15 use saved test probabilities; "
+        "the CNN has TN=56, FP=10, FN=78, TP=3. The plots use saved test probabilities; "
         "hash-bound receipts prevent another inference pass."
     )
     for role, label in [("cnn_baseline", "CNN"), ("champion", "Champion")]:
@@ -580,17 +689,20 @@ def main():
         "A 16-unit MNIST network trains on 1,200 examples with 200 validation examples for two epochs. "
         "Learning rates 0.001 and 0.01 give validation accuracy 0.54 and 0.80, respectively. "
         "Both local runs log parameters, epoch metrics, model and loss plot. Repeating the 0.001 run "
-        "on DagsHub reproduces 0.54 accuracy (Figures 17-18)."
+        "on DagsHub reproduces 0.54 accuracy."
     )
     p(
         "An <b>experiment</b> groups attempts; a <b>run</b> records one attempt; <b>parameters</b> "
         "describe configuration; <b>metrics</b> measure performance; <b>artifacts</b> are saved files; "
         "<b>tags</b> record context. Private DagsHub mirrors GitHub and provides the project MLflow "
-        "tracking URI. Credentials are read from environment variables in ignored .env files."
+        "tracking URI. Credentials are read from environment variables in ignored .env files. "
+        "The recorded Git output below proves all three credential files are ignored; it contains no values."
     )
+    console("reports/submission/git-ignore-proof.txt")
     row(
         [
             (shot("mlflow-comparison-metrics"), "Local MLflow toy comparison."),
+            (shot("dagshub-data"), "GitHub-connected DagsHub project."),
             (shot("dagshub-toy"), "Verified DagsHub toy run."),
         ],
         height=142,
@@ -622,7 +734,7 @@ def main():
         "Runs retain model, configuration, packages, split lists, layer summary, training curves and "
         "validation outputs. Final evaluation stores both models' test plots and saved predictions, "
         "with final metrics attached to the originating training runs. The table compares eleven "
-        "candidates; six distinct tuning runs are also shown in Figure 22."
+        "candidates; the comparison screenshot shows six distinct tuning runs."
     )
     candidates = [
         *read("reports/training/model_comparison.json")["models"],
@@ -660,7 +772,7 @@ def main():
         "Registry <b>23L-0907_A2_Ops</b> contains version 1 (frozen MobileNet) and version 2 "
         "(tuned MobileNet); alias <b>champion</b> points to version 2. The separate script "
         "scripts/predict_registry.py loads models:/23L-0907_A2_Ops@champion and predicts a validation "
-        "image: probability 0.9492709637 at saved threshold 0.6196606457 (Figures 23-24)."
+        "image: probability 0.9492709637 at saved threshold 0.6196606457."
     )
     row(
         [
@@ -670,35 +782,38 @@ def main():
         height=112,
     )
 
-    # 11: the app and PostgreSQL form one coherent workflow.
-    page("Tasks 4-5 - Flask and PostgreSQL")
+    # 11: two distinct task chapters share a page to retain the 15-page limit.
+    page("Task 4 - Flask application")
     h("4.1 Model loading; 4.2 Routes and guards")
     p(
-        "Native serving loads and validates the champion once per worker and uses the training decoder. "
-        "The retained native image and model remain available. Current Flask uses one remote client per "
-        "worker; the cloud interpreter loads once per warm instance. Two original validation-image checks "
-        "and all 146 validation export-parity decisions are recorded; no test data was reused."
+        "Native serving loads the champion once per worker and reuses the training decoder: repeated "
+        "loads waste CPU, while preprocessing differences change scores. Current Flask uses one cloud "
+        "client; each warm cloud instance loads one interpreter. Below is the saved native check output "
+        "from reports/application/verification.json; no inference was rerun."
     )
+    console("reports/submission/native-check-output.txt")
     p(
-        "Routes provide upload, prediction, saved result, paginated history and health. Upload checks "
-        "cover form token, one file, sanitized name, type, decoding, 4 MiB bytes and 4 million pixels. "
-        "JPEG, PNG and WebP stay in memory; only metadata and outcomes are stored."
+        "The real-labeled check is a false positive; the AI-labeled check is correct. Their AI verdict "
+        "confidence equals the saved AI probability. Routes cover upload, result, history and health. "
+        "Guards check form token, safe filename, type, decoding, 4 MiB and 4 million pixels. "
+        "JPEG/PNG/WebP uploads stay in memory."
     )
     h("4.3 Interface; 4.4 Configuration")
     p(
-        "HTML/CSS presents upload, verdict/confidence and history (Figures 25-28). Environment variables "
-        "supply database, model policy, server secrets and cloud settings. Debug is off; the development "
-        "Flask server was checked, and Compose runs Gunicorn with one worker and two threads. "
-        "A configured threshold must match the saved policy; the API key stays server-side."
+        "HTML/CSS displays upload, verdict/confidence and a caveat. Environment settings supply the "
+        "database, model policy, secrets and cloud configuration. Debug is off to prevent interactive "
+        "tracebacks. Flask's development server was checked; Compose uses Gunicorn (one worker, two "
+        "threads). Threshold must match the saved policy; the API key stays server-side."
     )
     row(
         [
             (shot("app-upload"), "Local upload page."),
             (shot("app-result"), "Saved verdict, confidence and version."),
+            (shot("app-health"), "Healthy database/model; debug off."),
         ],
-        height=136,
+        height=100,
     )
-    h("Task 5 - Persistent database trail")
+    page("Task 5 - Database trail", new_page=False)
     p(
         "PostgreSQL records UTC time, safe filename, image hash/size, status, label, probability, "
         "confidence, threshold, latency and model version/identity. Rejections and cloud failures "
@@ -706,12 +821,10 @@ def main():
         "an external named volume preserves rows across recreation. All <b>11 original rows</b> "
         "survived; eight integration checks brought the total to <b>19</b>."
     )
-    row(
-        [
-            (shot("app-history"), "PostgreSQL-backed history."),
-            (shot("app-health"), "Healthy database, remote model and debug off."),
-        ],
-        height=125,
+    figure(
+        shot("app-history"),
+        "PostgreSQL-backed history, read from the persistent database.",
+        height=105,
     )
 
     # 12: Docker facts and three concise, genuine evidence panels.
@@ -721,9 +834,19 @@ def main():
         "An isolated postgres:17-alpine lab exercised run, ports, volume, logs, shell, listing, stop, "
         "start, restart and cleanup. An image is a template; a container is its instance; a layer is "
         "a cached build change; a volume outlives a container; port mapping forwards a host port. "
-        "Only lab resources were removed. This warm-up and the DVC toy were completed during final audit."
+        "Only lab resources were removed. This warm-up and the DVC toy were completed during final audit.",
+        evidence_key="docker-warmup",
     )
     h("6.2 Image design; 6.3 Compose configuration")
+    p(
+        f"Service and mount configuration: <link href='{REPOSITORY}/blob/{commit}/Dockerfile'>Dockerfile</link>, "
+        f"<link href='{REPOSITORY}/blob/{commit}/Dockerfile.client'>Dockerfile.client</link>, "
+        f"<link href='{REPOSITORY}/blob/{commit}/compose.yaml'>compose.yaml</link>, "
+        f"<link href='{REPOSITORY}/blob/{commit}/compose.cloud.yaml'>compose.cloud.yaml</link> and "
+        f"<link href='{REPOSITORY}/blob/{commit}/compose.postgres.yaml'>compose.postgres.yaml</link>.",
+        "small",
+        evidence_key="docker-stack",
+    )
     table(
         ["Component", "Configuration and reason"],
         [
@@ -759,30 +882,39 @@ def main():
     )
     row(
         [
-            (shot("docker-warmup"), "Recorded Docker warm-up and cleanup."),
-            (shot("docker-stack"), "Healthy services and preserved mounts."),
+            (
+                shot("docker-warmup"),
+                "Recorded Docker warm-up and cleanup.",
+                "docker-warmup",
+            ),
+            (
+                shot("docker-stack"),
+                "Healthy services and preserved mounts.",
+                "docker-stack",
+            ),
         ],
-        height=119,
+        height=110,
     )
     h("6.5 Failure diagnosis and recovery")
     p(
         "In the isolated native lab, a missing model mount caused FileNotFoundError for policy.json. "
-        "Adding the read-only bundle restored HTTP 200, loaded=true and healthy PostgreSQL (Figure 31). "
+        "Adding the read-only bundle restored HTTP 200, loaded=true and healthy PostgreSQL. "
         "Logs, shell and lifecycle commands were checked; earlier database recreation preserved history."
     )
     figure(
         shot("docker-failure"),
         "Actual missing-policy log and corrected health response.",
-        height=105,
+        height=95,
     )
 
     # 13: concise CI evidence and reproduction/handoff.
     page("Task 6 - Automated checks")
     h("6.6 Failing-then-passing CI lab")
     p(
-        "The private 23L-0907_A2_Ops-ci-lab repository runs Python 3.11 and 3.12. The first commit "
-        "deliberately expects 2+2=5 and fails; correcting the expectation to 4 makes both versions pass "
-        "(Figures 32-33). Each result belongs to a separate committed workflow run."
+        f"The private <link href='{REPOSITORY}-ci-lab'>23L-0907_A2_Ops-ci-lab</link> "
+        "repository runs Python 3.11 and 3.12. The first commit "
+        "deliberately expects 2+2=5 and fails; correcting the expectation to 4 makes both versions pass. "
+        "Each result belongs to a separate committed workflow run."
     )
     row(
         [
@@ -879,7 +1011,8 @@ def main():
     )
     p(
         "Postman CLI 1.76.0 ran six requests and <b>13 assertions with zero failures</b> on a hosted "
-        "Ubuntu runner. Generated red, blue and white images test wiring, not accuracy. "
+        f"<link href='{postman['workflow_run']}'>Ubuntu runner</link>. "
+        "Generated red, blue and white images test wiring, not accuracy. "
         "The versioned collection is postman/visionguard.postman_collection.json."
     )
     p(
@@ -893,10 +1026,9 @@ def main():
     # 15: complete integration, error handling, and brief references.
     page("Task 8 - Local-to-cloud integration")
     p(
-        "After local validation, Flask sends the image over verified HTTPS to Vercel. The client uses "
-        "a <b>3-second connect timeout and 45-second read timeout</b>, no redirects and no automatic "
-        "POST retries. It bounds JSON to 16 KiB and checks version, hashes, saved threshold, score, "
-        "verdict, confidence and dimensions before recording success."
+        "Flask validates locally, then uploads over verified HTTPS with a <b>3-second connect timeout "
+        "and 45-second read timeout</b>, no redirects or POST retries. It caps JSON at 16 KiB and "
+        "verifies version, hashes, threshold, score, verdict, confidence and dimensions before logging success."
     )
     table(
         ["Generated input", "AI probability", "Verdict", "History"],
@@ -915,6 +1047,7 @@ def main():
             (shot("app-result"), "White input result."),
         ],
         height=94,
+        reference_after=True,
     )
     p(
         "All three generated inputs matched the local LiteRT reference within 0.0001. The browser "
@@ -945,7 +1078,8 @@ def main():
             (shot("app-corrupt"), "Corrupt image rejected."),
             (shot("app-too-large"), "Oversized image rejected."),
         ],
-        height=87,
+        height=83,
+        reference_after=True,
     )
     row(
         [
@@ -953,11 +1087,12 @@ def main():
             (shot("app-timeout"), "Saved timeout with a readable history link."),
         ],
         height=105,
+        reference_after=True,
     )
     p(
-        "Injected timeout/network failures wrote error rows without interrupting production services. "
-        "Original PostgreSQL rows and native model files remained unchanged. Uploads are not saved, "
-        "logs rotate and disk guards preserve the <b>2 GiB reserve</b>.",
+        "Injected timeout/network errors were saved without a verdict; production services stayed running. "
+        "Original history and native weights remained unchanged. In-memory uploads, rotating logs and "
+        "disk guards maintain the <b>2 GiB reserve</b>.",
         "small",
     )
     p(
@@ -987,7 +1122,19 @@ def main():
         canvas.drawRightString(570, 24, str(doc.page))
         canvas.restoreState()
 
-    doc = SimpleDocTemplate(
+    class ReportTemplate(SimpleDocTemplate):
+        def afterFlowable(self, flowable):
+            number = getattr(flowable, "chapter_number", None)
+            if number is not None:
+                key = f"task-{number}"
+                self.canv.bookmarkHorizontalAbsolute(
+                    key, self.frame._y + flowable.height
+                )
+                self.canv.addOutlineEntry(flowable.getPlainText(), key, level=0)
+
+    assert chapter_numbers == set(range(1, 9))
+    assert not pending_references, "Every figure needs a reference in body text"
+    doc = ReportTemplate(
         str(output),
         pagesize=(612, 792),
         leftMargin=42,

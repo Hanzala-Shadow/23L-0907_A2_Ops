@@ -1,0 +1,5 @@
+23L-0907_A2_Ops | Recorded command output | 2026-10-25T20:33:56.532103+00:00
+$ git check-ignore -v -- .env .env.cloud .dvc/config.local
+.gitignore:7:.env  .env
+.gitignore:8:.env.*  .env.cloud
+.gitignore:10:.dvc/config.local  .dvc/config.local
