@@ -1,9 +1,8 @@
-"""Build the assignment PDF from saved results and genuine UI evidence."""
+"""Build a concise assignment report from saved results; perform no inference."""
 
 import csv
 import json
 import shutil
-import subprocess
 from datetime import datetime
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -12,7 +11,7 @@ from zoneinfo import ZoneInfo
 from PIL import Image as PILImage
 from PIL import ImageChops
 from reportlab.lib import colors
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
@@ -28,6 +27,7 @@ from reportlab.platypus import (
 
 ROOT = Path(__file__).resolve().parents[1]
 WIDTH = 528
+EVIDENCE = "reports/submission/evidence/"
 
 
 def read(path):
@@ -37,80 +37,73 @@ def read(path):
 def main():
     if shutil.disk_usage(ROOT).free < 2.125 * 1024**3:
         raise RuntimeError("Keep the 2 GiB reserve plus report headroom")
-    for name, path in [
-        ("Body", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
-        ("BodyBold", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
-        ("Mono", "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"),
-    ]:
-        pdfmetrics.registerFont(TTFont(name, path))
-    styles = getSampleStyleSheet()
-    for name in ["Normal", "BodyText", "Title", "Heading1", "Heading2", "Heading3"]:
-        styles[name].fontName = "BodyBold" if name.startswith("Heading") else "Body"
-    styles["BodyText"].fontSize = 10
-    styles["BodyText"].leading = 14
-    styles["BodyText"].spaceAfter = 8
-    styles["BodyText"].allowWidows = 0
-    styles["BodyText"].allowOrphans = 0
-    styles["Heading1"].fontSize = 21
-    styles["Heading1"].leading = 26
-    styles["Heading1"].textColor = colors.HexColor("#16394c")
-    styles["Heading2"].fontSize = 13
-    styles["Heading2"].leading = 18
-    styles["Heading2"].spaceBefore = 15
-    styles.add(
-        ParagraphStyle(
-            "Caption",
-            fontName="Body",
-            fontSize=8.2,
-            leading=11,
-            textColor=colors.HexColor("#43545d"),
+    for name, filename in [("Body", "DejaVuSans"), ("Bold", "DejaVuSans-Bold")]:
+        pdfmetrics.registerFont(
+            TTFont(name, f"/usr/share/fonts/truetype/dejavu/{filename}.ttf")
+        )
+    ink = colors.HexColor("#16394c")
+    styles = {
+        "body": ParagraphStyle(
+            "body", fontName="Body", fontSize=9.5, leading=13, spaceAfter=7
+        ),
+        "title": ParagraphStyle(
+            "title",
+            fontName="Bold",
+            fontSize=20,
+            leading=25,
+            textColor=ink,
             spaceAfter=12,
-        )
-    )
-    styles.add(ParagraphStyle("Cell", fontName="Body", fontSize=8, leading=10.5))
-    styles.add(
-        ParagraphStyle(
-            "Reference", fontName="Body", fontSize=7.6, leading=10, spaceAfter=5
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            "CodeBlock",
-            fontName="Mono",
-            fontSize=7.4,
+        ),
+        "heading": ParagraphStyle(
+            "heading",
+            fontName="Bold",
+            fontSize=11,
+            leading=15,
+            textColor=ink,
+            spaceBefore=8,
+            spaceAfter=5,
+            keepWithNext=True,
+        ),
+        "caption": ParagraphStyle(
+            "caption",
+            fontName="Body",
+            fontSize=7.5,
             leading=10,
-            backColor=colors.HexColor("#f0f3f5"),
-            borderPadding=7,
-            spaceAfter=10,
-            splitLongWords=True,
-        )
-    )
+            textColor=colors.HexColor("#43545d"),
+            spaceBefore=4,
+            spaceAfter=7,
+        ),
+        "cell": ParagraphStyle("cell", fontName="Body", fontSize=8, leading=10.5),
+        "small": ParagraphStyle(
+            "small", fontName="Body", fontSize=8, leading=11, spaceAfter=6
+        ),
+    }
     story = []
-    figure_number = 0
-    index = []
+    figures = 0
+    now = datetime.now(ZoneInfo("Asia/Karachi"))
+    # Preserve the graded implementation revision when only the report changes.
+    commit = read("reports/submission/verification.json")["source_commit"]
+    assets = ROOT / "reports/training-runtime/submission/concise-assets"
+    assets.mkdir(parents=True, exist_ok=True)
 
-    def p(value, style="BodyText"):
-        story.append(Paragraph(value, styles[style]))
+    def p(text, style="body"):
+        story.append(Paragraph(text, styles[style]))
 
-    def h(value):
-        p(value, "Heading2")
+    def h(text):
+        p(text, "heading")
 
-    def chapter(value):
+    def page(title):
         if story:
             story.append(PageBreak())
-        p(value, "Heading1")
-        index.append(value)
+        p(title, "title")
 
-    def code(value):
-        p(escape(value).replace("\n", "<br/>"), "CodeBlock")
-
-    def table(headers, rows, widths=None):
+    def table(headers, rows, widths=None, compact=False):
         data = [
-            [Paragraph(escape(str(x)), styles["Cell"]) for x in row]
+            [Paragraph(escape(str(c)), styles["cell"]) for c in row]
             for row in [headers, *rows]
         ]
-        t = Table(data, colWidths=widths, repeatRows=1, hAlign="LEFT")
-        t.setStyle(
+        result = Table(data, colWidths=widths, repeatRows=1, hAlign="LEFT")
+        result.setStyle(
             TableStyle(
                 [
                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#dce8ec")),
@@ -121,477 +114,331 @@ def main():
                         (-1, -1),
                         [colors.white, colors.HexColor("#f4f6f7")],
                     ),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 6),
-                    ("LINEBELOW", (0, 0), (-1, 0), 0.6, colors.HexColor("#90a5ad")),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3 if compact else 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3 if compact else 5),
+                    ("LINEBELOW", (0, 0), (-1, 0), 0.5, colors.HexColor("#90a5ad")),
                 ]
             )
         )
-        if len(data) <= 8:
-            story.append(KeepTogether([t, Spacer(1, 10)]))
-        else:
-            story.extend([t, Spacer(1, 10)])
+        story.extend([result, Spacer(1, 7)])
 
-    def figure(path, caption, max_height=300):
-        nonlocal figure_number
+    def panel(path, caption, width=WIDTH, height=190):
+        nonlocal figures
+        figures += 1
         source = ROOT / path
-        if not source.is_file():
-            raise FileNotFoundError(source)
-        figure_number += 1
-        for i in range(len(story) - 1, -1, -1):
-            previous = story[i]
-            if isinstance(previous, Paragraph) and previous.style.name == "BodyText":
-                original = getattr(previous, "report_text", previous.text)
-                references = [*getattr(previous, "report_figures", []), figure_number]
-                label = "Figure" if len(references) == 1 else "Figures"
-                updated = Paragraph(
-                    original + f" <i>({label} {', '.join(map(str, references))}.)</i>",
-                    previous.style,
-                )
-                updated.report_text, updated.report_figures = original, references
-                story[i] = updated
-                break
-            if isinstance(previous, Paragraph) and previous.style.name == "Heading1":
-                break
-        im = PILImage.open(source).convert("RGB")
+        with PILImage.open(source) as original:
+            im = original.convert("RGB")
         if source.stem in {"app-health", "cloud-health"}:
-            # Keep the full JSON and viewer header; remove empty white space and
-            # the scrollbar from the report asset. Original captures are retained.
             im = im.crop((0, 0, im.width - 16, im.height))
             bounds = ImageChops.difference(
                 im, PILImage.new("RGB", im.size, "white")
             ).getbbox()
             if bounds:
                 im = im.crop((0, 0, im.width, min(im.height, bounds[3] + 15)))
-        w, ht = im.size
-        scale = min(WIDTH / w, max_height / ht)
-        assets = ROOT / "reports/training-runtime/submission/report-assets"
-        assets.mkdir(parents=True, exist_ok=True)
-        prepared = assets / (str(figure_number) + ".png")
-        im.thumbnail((round(w * scale * 2.5), round(ht * scale * 2.5)))
-        if (
-            "/data/" in path
-            or "misclassified_examples.png" in path
-            or "augmented_batch.png" in path
-            or "/submission/evidence/" in path
-        ):
-            prepared = prepared.with_suffix(".jpg")
-            im.save(prepared, quality=92, subsampling=0, optimize=True)
-        else:
-            im.save(prepared, optimize=True)
+        scale = min(width / im.width, height / im.height)
+        w, ht = im.width * scale, im.height * scale
+        im.thumbnail((round(w * 3), round(ht * 3)))
+        target = assets / f"figure-{figures}.jpg"
+        im.save(target, quality=92, subsampling=0, optimize=True)
         im.close()
-        picture = Image(str(prepared), width=w * scale, height=ht * scale)
-        story.append(
-            KeepTogether(
+        return [
+            Image(str(target), width=w, height=ht),
+            Paragraph(f"Figure {figures}. {escape(caption)}", styles["caption"]),
+        ]
+
+    def figure(path, caption, height=190):
+        story.append(KeepTogether(panel(path, caption, height=height)))
+
+    def row(items, height=140):
+        gap = 12
+        cell_width = (WIDTH - gap * (len(items) - 1)) / len(items)
+        cells = []
+        for i, (path, caption) in enumerate(items):
+            if i:
+                cells.append("")
+            cells.append(panel(path, caption, width=cell_width, height=height))
+        widths = [cell_width if i % 2 == 0 else gap for i in range(len(cells))]
+        result = Table([cells], colWidths=widths, hAlign="LEFT")
+        result.setStyle(
+            TableStyle(
                 [
-                    picture,
-                    Spacer(1, 5),
-                    Paragraph(
-                        f"Figure {figure_number}. {escape(caption)}", styles["Caption"]
-                    ),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
                 ]
             )
         )
+        story.append(result)
 
-    def shot(name, caption, max_height=310):
-        figure("reports/submission/evidence/" + name + ".png", caption, max_height)
+    def shot(name):
+        return EVIDENCE + name + ".png"
 
-    commit = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
-    ).strip()
-    project = "23L-0907_A2_Ops"
-    now = datetime.now(ZoneInfo("Asia/Karachi"))
-    chapter("VisionGuard")
-    p("AI-generated and real-labeled image classification", "Heading2")
-    story.append(Spacer(1, 15))
+    # 1: front matter and a short outcome, without a separate reading-guide chapter.
+    page("VisionGuard")
+    p("AI-generated and real image classification", "heading")
+    p("MLOps Assignment 2", "heading")
+    story.append(Spacer(1, 14))
     table(
-        ["Submission", "Value"],
+        ["Submission", "Details"],
         [
             ["Name", "Syed Muhammad Hanzala"],
-            ["Roll number / project", "23L-0907 / " + project],
-            ["Prepared", now.strftime("%d %B %Y, %H:%M Asia/Karachi")],
-            ["Graded source revision", commit],
+            ["Roll number / project", "23L-0907 / 23L-0907_A2_Ops"],
+            ["Report date", now.strftime("%d %B %Y")],
+            ["Graded implementation", commit],
             ["GitHub", "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops"],
             ["DagsHub", "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops"],
             ["Live model API", "https://23l-0907-a2-ops-api.vercel.app/predict"],
-            ["Public readiness", "https://23l-0907-a2-ops-api.vercel.app/health"],
-            ["Local Flask UI", "http://127.0.0.1:5000/"],
+            ["Public health check", "https://23l-0907-a2-ops-api.vercel.app/health"],
+            ["Local web app", "http://127.0.0.1:5000/"],
         ],
-        [135, 393],
+        [130, 398],
     )
+    h("Project outcome")
     p(
-        "The source revision above identifies the code and evidence used for this report. "
-        "The PDF itself is added in a following documentation-only commit, avoiding a self-referential commit hash."
+        "VisionGuard audits and versions the dataset, compares a custom CNN with MobileNetV2, "
+        "tracks experiments on DagsHub, and serves the selected model through a cloud API. "
+        "The local Flask interface sends uploads to that API and records results in PostgreSQL. "
+        "The tuned model achieved <b>72.11% test accuracy and 0.8161 ROC-AUC</b>."
+    )
+    h("Report scope")
+    p(
+        "Tasks 1-8 are covered with the main decisions, results and essential evidence. "
+        "Detailed commands, full screenshots and machine-readable receipts remain in the repository; "
+        "docs/assignment-checklist.md maps every requirement to its evidence. The optional Grad-CAM "
+        "bonus was not attempted."
     )
     h("Assistance disclosure")
     p(
-        "OpenAI Codex assisted with environment setup, implementation, debugging, tests, experiment execution, "
-        "deployment, and drafting this report. Official TensorFlow/Keras, MLflow, DVC, Docker, GitHub, Vercel "
-        "and Postman documentation informed the tool configuration. The saved scripts, run receipts and logs "
-        "provide the evidence behind the results. No claim is made that this work was completed without assistance."
+        "OpenAI Codex assisted with setup, implementation, debugging, experiments, deployment and "
+        "report drafting. Results are backed by saved scripts, metrics and execution receipts."
     )
     p(
-        "Both repositories remain private. The student will share grading access separately. The prediction "
-        "endpoint requires its server-side API key; no credential is printed in this report."
+        "Both repositories are private; grading access will be shared separately. The prediction "
+        "API requires a key, which must be shared privately. The implementation revision above "
+        "is unchanged by this shortened report.",
+        "small",
     )
 
-    chapter("Project outcome and reading guide")
+    # 2: compact audit and genuine environment/DVC evidence.
+    page("Task 1 - Data and versioning")
+    h("1.1 Environment")
     p(
-        "The system audits and versions the Kaggle data, trains a custom CNN and MobileNetV2, compares eleven "
-        "candidates, locks a validation-selected threshold, and evaluates two locked models once on test. "
-        "The champion is MLflow registry version 2. A local Flask interface calls its LiteRT export on Vercel, "
-        "then writes successful and failed attempts to the existing PostgreSQL database."
+        "An isolated .venv uses Python 3.12.3, TensorFlow CPU 2.19.1, Keras 3.15.1, "
+        "Keras Tuner 1.4.8, MLflow 2.22.5 and DVC 3.67.1. TensorFlow detected no GPU. "
+        "Pinned requirements, bounded CPU threads and pre-operation disk checks keep execution "
+        "reproducible within the 2 GiB free-space reserve (Figure 1)."
     )
-    table(
-        ["Task", "Evidence in this report"],
-        [
-            [
-                "1",
-                "Environment, inventory, EDA, duplicate policy, deterministic splits, DVC toy restore",
-            ],
-            [
-                "2",
-                "Input pipeline, CNN layers, two transfer phases, discipline, test results, ten errors, tuner",
-            ],
-            [
-                "3",
-                "Local and remote toy runs, manual/autolog tracking, artifacts, comparison, registry",
-            ],
-            [
-                "4-5",
-                "Inference lifetime, upload validation, UI, configuration, PostgreSQL trail",
-            ],
-            [
-                "6",
-                "Warm-up, image design, Compose, size optimization, recovery, red/green CI",
-            ],
-            [
-                "7-8",
-                "Cloud deployment steps, Postman from another network, local API integration",
-            ],
-        ],
-        [65, 463],
-    )
-    p(
-        "Task 7's direct instruction and Task 8 require localhost Flask calling a cloud model API; this is the "
-        "implemented arrangement. The example pathway table describes other layouts too. Vercel's DNS-safe "
-        "resource name is 23l-0907-a2-ops-api; the GitHub, DagsHub, MLflow and Compose project identity is "
-        "23L-0907_A2_Ops. The Docker and DVC toy exercises were completed during the final audit rather than "
-        "before the main implementation; their timestamps are retained."
-    )
-    p(
-        "Optional Grad-CAM bonus work was not attempted. No training, threshold selection, conversion or "
-        "deployment check reuses the held-out test set after the recorded final evaluation. Screenshots are "
-        "genuine browser captures; transcript screenshots are explicitly labeled recorded command output."
-    )
-
-    chapter("Task 1 - Data understanding and versioning")
-    h("1.1 Isolated CPU environment")
-    p(
-        "The Python virtual environment is .venv. TensorFlow CPU 2.19.1, Keras 3.15.1, MLflow 2.22.5 and "
-        "DVC 3.67.1 are pinned with the other dependencies. GPU discovery returned an empty list. CPU thread "
-        "counts are bounded for this machine. The environment smoke check trained synthetic tensors and "
-        "verified Keras/MLflow save-load, Flask and SQLAlchemy before downloading the assignment data."
-    )
-    shot(
-        "environment",
-        "Recorded environment command output with project, user, time, versions and GPU result.",
-    )
-    code(
-        "python3 -m venv .venv\n.venv/bin/python -m pip install -r requirements/locked.txt\n.venv/bin/python scripts/check_environment.py --smoke\n.venv/bin/python scripts/check_disk.py --minimum-free-gib 2"
-    )
-    p(
-        "venv isolates packages; the lock records exact versions; the smoke flag exercises functionality; "
-        "the disk check stops unsafe work. With the environment, raw images and DVC cache retained, the "
-        "reserve is checked before training, artifact work and uploads. No large local rebuild was needed for submission."
-    )
-    h("1.2 Audit and reproducible splits")
+    h("1.2 Dataset audit and splits")
     audit = read("reports/data/audit_summary.json")
-    rows = []
-    for label, a in audit["classes"].items():
-        rows.append(
+    audit_rows = []
+    for label, item in audit["classes"].items():
+        audit_rows.append(
             [
                 label,
-                a["total_files"],
-                a["unreadable_files"],
-                " / ".join(str(a["width"][k]) for k in ["min", "median", "max"]),
-                " / ".join(str(a["height"][k]) for k in ["min", "median", "max"]),
+                item["total_files"],
+                " / ".join(str(item["width"][k]) for k in ["min", "median", "max"]),
+                " / ".join(str(item["height"][k]) for k in ["min", "median", "max"]),
                 " / ".join(
-                    str(a["file_size_bytes"][k]) for k in ["min", "median", "max"]
+                    str(item["file_size_bytes"][k]) for k in ["min", "median", "max"]
                 ),
             ]
         )
     table(
         [
-            "Folder label",
+            "Class",
             "Files",
-            "Corrupt",
             "Width min/med/max",
             "Height min/med/max",
             "Bytes min/med/max",
         ],
-        rows,
-        [85, 35, 44, 110, 110, 144],
+        audit_rows,
+        [76, 32, 112, 112, 196],
+        compact=True,
     )
     p(
-        "The custom walker records class, bytes, dimensions, colour mode, decoded format and SHA-256 for "
-        "every file in reports/data/image_manifest.csv. All 975 files decode. One exact duplicate pair has the "
-        "same class: image33.jpg and image34.jpg. The raw source is preserved, while split preparation excludes "
-        "image34.jpg. There are 974 unique hashes and no conflicting exact-hash labels."
+        "The custom walker records class, bytes, dimensions, colour mode, format and SHA-256. "
+        "All 975 files decode: <b>0 corrupt files, 1 exact duplicate pair</b> (image33.jpg/image34.jpg). "
+        "Raw files are preserved; image34.jpg is excluded from the 974-image split inventory."
     )
     table(
         ["Split", "AI-generated", "Real-labeled", "Total"],
         [["Train", 376, 305, 681], ["Validation", 81, 65, 146], ["Test", 81, 66, 147]],
-        [135, 130, 130, 133],
+        [132] * 4,
+        compact=True,
     )
     p(
-        "A SHA-256 ranking of seed 42 and each content hash makes the stratified 70/15/15 lists independent "
-        "of input row order. Largest-remainder allocation determines integer counts. Checks reject overlapping "
-        "paths or hashes and verify source bytes. A forced DVC reproduction produced identical lists. Exact "
-        "hashes do not detect differently encoded near-duplicates or establish true image provenance."
+        "Seed-42 hash ranking produces stratified 70/15/15 lists. Validation checks confirm no path "
+        "or hash overlap and identical lists on reproduction. Exact hashing does not detect near-duplicates."
     )
-    h("1.3 Visual EDA")
+    h("1.4 DVC storage and toy restore")
     p(
-        "The grid shows the collection includes photographs, paintings, composites and web graphics. Folder "
-        "labels are the task target, not independently verified origin. This visual diversity is a likely source "
-        "of errors and limits claims about real-world provenance."
+        "The toy CSV has two committed versions on the dvc-lab branch. After checking out the older "
+        "version and deleting both its local data and cache, dvc pull restored the original bytes "
+        "(Figure 2). Its pointer holds the checksum, size and path; large content stays outside Git. "
+        "Project data, splits and model bundles use DagsHub DVC storage; credentials remain ignored."
     )
-    figure(
-        "reports/data/sample_grid.png",
-        "Seeded samples per folder class; source labels are not verified provenance.",
-        390,
-    )
-    for field, explanation in [
-        (
-            "width",
-            "Both classes have varied widths, with some very large files. AI-labeled widths cluster near common generation sizes, while real-labeled widths are also heterogeneous. Resizing is necessary for bounded CPU cost.",
-        ),
-        (
-            "height",
-            "Image heights vary strongly and include portrait and landscape examples. A square training tensor would distort subjects if stretched. White letterboxing preserves the aspect ratio while fixing tensor dimensions.",
-        ),
-        (
-            "file_size_bytes",
-            "File sizes have a long tail and depend on compression and content as well as dimensions. A small compressed file can still decode to many pixels. Serving therefore checks both byte count and pixel count.",
-        ),
-    ]:
-        p(explanation)
-        figure(
-            f"reports/data/{field}_histogram.png",
-            f"Per-class {field.replace('_', ' ')} distributions from the complete audit.",
-            240,
-        )
-    h("1.4 DVC toy lab and project storage")
-    dvc = read("reports/labs/dvc/verification.json")
-    p(
-        "The separate tiny CSV lab initialized Git and DVC in an empty folder, committed a two-row CSV pointer, "
-        "added a third row, and committed the second pointer. Both versions were pushed on the dvc-lab branch "
-        "of the existing private project. A local folder outside that toy repository is its remote. Returning to "
-        "the first commit restored the older CSV. Deleting both its workspace file and its toy cache, then "
-        "running dvc pull, restored exactly the old bytes. Production images and cache were untouched."
-    )
-    table(
-        ["Version", "Git commit"],
+    row(
         [
-            ["Initial", dvc["version_commits"][0]],
-            ["Updated", dvc["version_commits"][1]],
+            (shot("environment"), "Recorded versions and GPU check."),
+            (shot("dvc-lab"), "Two toy commits and verified old-version restore."),
         ],
-        [90, 438],
-    )
-    code(dvc["pointer"])
-    p(
-        "The pointer stores a checksum, byte size and relative output path. Git versions this small text; "
-        "DVC stores large content separately by checksum. The real project uses DagsHub's S3-compatible DVC "
-        "store. A previous empty-cache restore verified all 975 source hashes and five split files. Models "
-        "are also DVC-versioned. Credentials stay in ignored .dvc/config.local, never shared configuration."
-    )
-    shot(
-        "dvc-lab",
-        "Recorded DVC two-version history, older-version checkout and clean-cache pull verification.",
+        height=139,
     )
 
-    chapter("Task 2 - Model development")
-    h("2.1 Input pipeline and augmentation")
-    p(
-        "Split CSVs supply paths, labels and original hashes. The shared Pillow decoder applies EXIF "
-        "orientation, converts to RGB, composites transparency on white, then bilinearly resizes into a "
-        "centered 128 x 128 letterbox. tf.numpy_function bridges that decoder into tf.data; shape is fixed "
-        "to 128 x 128 x 3. Decoded uint8 tensors are cached in RAM, training is shuffled with seed 42, "
-        "batches contain 16 images and one batch is prefetched. Decoding uses one worker and the two caches "
-        "use roughly 39 MiB. No resized image dataset is written to disk."
+    # 3: every required EDA plot, with brief interpretations.
+    page("Task 1 - Visual exploration")
+    h("1.3 Samples and distributions")
+    figure(
+        "reports/data/sample_grid.png",
+        "Seeded examples from both folder labels.",
+        height=210,
     )
     p(
-        "128 pixels bounds CPU time but loses fine artifacts. Aspect ratio is preserved through padding. "
-        "Training-only Keras layers flip horizontally, rotate up to 18 degrees and zoom up to 10%. They are "
-        "inactive for validation and inference. Normalization is saved inside each model."
+        "The grid includes photographs, artwork, composites and web graphics. Folder labels define "
+        "the task target, but image origin was not independently verified; this diversity can confuse the model."
+    )
+    row(
+        [
+            ("reports/data/width_histogram.png", "Image widths by class."),
+            ("reports/data/height_histogram.png", "Image heights by class."),
+        ],
+        height=135,
+    )
+    p(
+        "<b>Widths:</b> Both classes span small images to several thousand pixels, with common generation "
+        "sizes visible in the AI class. Resizing bounds CPU work. <b>Heights:</b> Portrait and landscape "
+        "shapes vary substantially. Letterboxing preserves aspect ratio instead of stretching subjects."
+    )
+    figure(
+        "reports/data/file_size_bytes_histogram.png",
+        "Per-class file sizes, showing a long tail.",
+        height=116,
+    )
+    p(
+        "File sizes depend on compression and content as well as dimensions. Byte limits alone cannot "
+        "bound decoded memory, so serving also checks pixel count."
+    )
+
+    # 4: full per-layer table plus the required augmented-batch figure.
+    page("Task 2 - Pipeline and CNN")
+    h("2.1 Input pipeline")
+    p(
+        "Split CSVs feed tf.data. The shared decoder corrects EXIF orientation, converts to RGB, "
+        "composites transparency on white and letterboxes to 128 x 128 with bilinear resizing. "
+        "This preserves aspect ratio and limits CPU cost. Decoded uint8 tensors are cached in RAM "
+        "(about 39 MiB), training is shuffled with seed 42, then batched by 16 and prefetched one batch."
+    )
+    p(
+        "Training alone uses horizontal flips, rotation up to 18 degrees and zoom up to 10%. "
+        "Validation and inference use the unaugmented decoder; normalization is saved inside the model."
     )
     figure(
         "reports/training/cnn_baseline/augmented_batch.png",
-        "Original and augmented training images; no validation or test augmentation.",
-        330,
+        "Original and augmented training examples.",
+        height=108,
     )
-    h("2.2 Custom CNN baseline")
-    p(
-        "Three convolution blocks have 16, 32 and 64 filters. A convolution learns local spatial patterns; "
-        "BatchNorm stabilizes activations; ReLU adds nonlinearity; max pooling reduces spatial cost. Biases "
-        "are omitted before BatchNorm. Global average pooling replaces an expensive flatten layer. A "
-        "64-unit head and dropout 0.3 reduce capacity; one sigmoid estimates the AI-generated probability. "
-        "The model has 28,145 total parameters. Binary cross-entropy matches the target; Adam starts at "
-        "0.001. Accuracy, precision, recall and ROC-AUC make different errors visible."
-    )
-    with (ROOT / "reports/training/cnn_baseline/layers.csv").open() as f:
-        layers = list(csv.DictReader(f))
+    h("2.2 Custom CNN architecture")
+    with (ROOT / "reports/training/cnn_baseline/layers.csv").open() as handle:
+        layers = list(csv.DictReader(handle))
     table(
-        ["Layer", "Type", "Output shape", "Parameters"],
-        [
-            [r[k] for k in ["layer", "type", "output_shape", "parameters"]]
-            for r in layers
-        ],
-        [128, 137, 193, 70],
-    )
-    shot(
-        "model-summary",
-        "Recorded Keras summary for the custom CNN, including parameter totals.",
-    )
-    h("2.3 Frozen backbone and fine-tuning")
-    p(
-        "ImageNet MobileNetV2 is loaded without its original classifier. Its head uses global average "
-        "pooling, Dense(64), dropout 0.3 and a sigmoid. Its expected normalization is pixel / 127.5 - 1, "
-        "saved as a Rescaling layer; the CNN instead uses pixel / 255. Passing already normalized pixels "
-        "to these models would apply normalization twice and break the training-serving contract."
-    )
-    p(
-        "The frozen stage trains only 82,049 head parameters at learning rate 0.001. The second stage "
-        "starts from the best frozen checkpoint and recompiles Adam at 0.00001. Only block_16_expand, "
-        "block_16_depthwise and block_16_project become trainable: 551,489 trainable parameters including "
-        "the head. Earlier blocks, Conv_1 and every BatchNorm layer remain frozen. Calling the backbone "
-        "with training=False preserves moving statistics while selected convolution weights receive gradients. "
-        "Weight hashes verified those boundaries. Fine-tuning worsened validation loss, so it was not assumed superior."
-    )
-    figure(
-        "reports/training/mobilenetv2_frozen/training_curves.png",
-        "Frozen-head loss and accuracy; best validation-loss epoch is marked.",
-        235,
-    )
-    figure(
-        "reports/training/mobilenetv2_finetuned/training_curves.png",
-        "Last-block fine-tuning curves; earlier weights and BatchNorm remained frozen.",
-        235,
-    )
-    h("2.4 Training discipline")
-    p(
-        "Seed 42 fixes Python, NumPy and TensorFlow random choices. Deterministic TensorFlow operations, "
-        "two intra-op threads, one inter-op thread, disabled XLA and disabled oneDNN reduce variation. Exact "
-        "cross-hardware equivalence is not guaranteed. Every stage checkpoints minimum validation loss, "
-        "stops after no improvement and reduces the learning rate on a plateau. Only the best checkpoint "
-        "is used for validation predictions; the final epoch is not silently substituted."
-    )
-    table(
-        ["Run", "Best epoch", "Epochs completed", "Best validation loss"],
+        ["Layer", "Type", "Output shape (batch omitted)", "Parameters"],
         [
             [
-                r["model"],
-                r["best_epoch"],
-                r["epochs_completed"],
-                f"{r['validation_loss']:.5f}",
+                r["layer"],
+                r["type"],
+                r["output_shape"].replace("None, ", ""),
+                r["parameters"],
             ]
-            for r in read("reports/training/model_comparison.json")["models"]
+            for r in layers
         ],
-        [205, 80, 110, 133],
+        [125, 143, 185, 75],
+        compact=True,
+    )
+    p(
+        "Convolutions learn local features; BatchNorm stabilizes activations; ReLU adds nonlinearity; "
+        "pooling reduces spatial cost. Global averaging limits parameters, Dense(64) combines features, "
+        "dropout 0.3 regularizes, and a sigmoid gives AI probability. Total parameters: <b>28,145</b>.",
+        "small",
+    )
+
+    # 5: summary screenshot and two transfer learning curves.
+    page("Task 2 - Transfer learning")
+    p(
+        "The CNN uses pixel/255 normalization, binary cross-entropy and Adam at 0.001. "
+        "Accuracy, precision, recall and ROC-AUC expose different error types. Its recorded model "
+        "summary confirms the layer table on the preceding page (Figure 8)."
+    )
+    figure(
+        shot("model-summary"),
+        "Recorded CNN summary excerpt; the full output is saved in model_summary.txt.",
+        height=175,
+    )
+    h("2.3 Frozen backbone and last-block fine-tuning")
+    p(
+        "ImageNet MobileNetV2 is loaded without its classifier, followed by global averaging, "
+        "Dense(64), dropout 0.3 and a sigmoid. Its saved normalization is pixel/127.5 - 1, "
+        "matching the pretrained backbone. Applying CNN-style normalization would change its input distribution."
+    )
+    table(
+        ["Stage", "Trainable layers / parameters", "Adam rate"],
+        [
+            [
+                "Frozen",
+                "New dense classifier only; 82,049 trainable parameters",
+                "0.001",
+            ],
+            [
+                "Fine-tuned",
+                "Head + block_16_expand, block_16_depthwise, block_16_project; 551,489 parameters",
+                "0.00001",
+            ],
+        ],
+        [73, 370, 85],
+        compact=True,
+    )
+    p(
+        "Every BatchNorm layer, earlier block and Conv_1 remain frozen. The second stage starts from "
+        "the best frozen checkpoint and recompiles the optimizer. Inference-mode backbone statistics "
+        "avoid changing BatchNorm estimates; saved weight checks confirm the intended boundaries."
+    )
+    row(
+        [
+            (
+                "reports/training/mobilenetv2_frozen/training_curves.png",
+                "Frozen-head curves; best validation epoch marked.",
+            ),
+            (
+                "reports/training/mobilenetv2_finetuned/training_curves.png",
+                "Last-block fine-tuning did not improve validation loss.",
+            ),
+        ],
+        height=115,
+    )
+
+    # 6: no separate multi-page tuner narrative.
+    page("Task 2 - Training and tuning")
+    h("2.4 Training discipline")
+    p(
+        "Seed 42 fixes Python, NumPy and TensorFlow randomness. Deterministic operations, bounded "
+        "threads, early stopping, ReduceLROnPlateau and checkpoints on minimum validation loss are used. "
+        "Best epochs: CNN <b>1/6</b>, frozen MobileNet <b>3/6</b>, fine-tuned MobileNet <b>2/5</b>. "
+        "Only saved best checkpoints are compared; exact cross-hardware equivalence is not assumed."
     )
     figure(
         "reports/training/cnn_baseline/training_curves.png",
-        "CNN early stopping after six epochs; the best checkpoint was epoch 1.",
-        235,
+        "CNN loss and accuracy with best epoch 1 marked.",
+        height=105,
     )
-    h("2.5 Locked threshold and one test evaluation")
+    h("2.7 Keras Tuner: toy lab and eight project trials")
     p(
-        "The champion was selected from eleven candidates by minimum validation cross-entropy. Its "
-        "threshold 0.6196606457233429 minimizes 2 x false positives + false negatives on validation. A "
-        "false accusation that a real-labeled image is fake is assigned twice the cost of missing an AI "
-        "image. This is a stated product assumption, not an empirically measured harm ratio. Model and "
-        "threshold were locked before test evaluation; the CNN received its own validation-selected threshold."
+        "The MNIST toy uses 6,000 training and 1,000 validation examples from its training partition, "
+        "with RandomSearch over learning rate and hidden units. Four three-epoch trials are logged to DagsHub."
     )
-    results = []
-    for role in ["cnn_baseline", "champion"]:
-        m = read(f"reports/evaluation/{role}/metrics.json")
-        results.append(
-            [
-                role,
-                *[
-                    f"{m[k]:.4f}"
-                    for k in ["accuracy", "precision", "recall", "f1", "roc_auc"]
-                ],
-            ]
-        )
-    table(
-        ["Model", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC"],
-        results,
-        [153, 75, 75, 75, 75, 75],
-    )
-    p(
-        "Both locked models received exactly one inference pass on 147 test images (66 real-labeled, "
-        "81 AI-generated). Subsequent figures use the saved probability arrays. Identity receipts bind "
-        "the model hash, split manifest, threshold and selection-plan hash; a durable ledger refuses "
-        "another test pass. The champion confusion matrix is TN=51, FP=15, FN=26, TP=55. The CNN is weak "
-        "(TN=56, FP=10, FN=78, TP=3), and that result is retained rather than retuned on test."
-    )
-    for role in ["cnn_baseline", "champion"]:
-        figure(
-            f"reports/evaluation/{role}/confusion_matrix.png",
-            f"{role}: confusion matrix from the single saved test pass.",
-            235,
-        )
-        figure(
-            f"reports/evaluation/{role}/roc.png",
-            f"{role}: test ROC using the same saved probabilities.",
-            235,
-        )
-    p(
-        "Champion accuracy dropped from 80.82% on validation to 72.11% on test. The data are small and "
-        "varied, and validation was repeatedly reused during search. Neither these metrics nor a confident "
-        "single prediction establish image origin. The observed test result did not change the locked model."
-    )
-    h("2.6 Ten misclassified examples")
-    figure(
-        "reports/evaluation/misclassified_examples.png",
-        "The first ten errors in fixed test-manifest order, rendered from the saved evaluation selection.",
-        400,
-    )
-    p(
-        "All ten examples are false negatives because AI-labeled paths occur first in the fixed manifest; "
-        "this is not a representative sample of all error types. The full evaluation also contains 15 false positives."
-    )
-    hypotheses = [
-        "A multi-photo web screenshot may favor photo and page-layout cues.",
-        "A nebula-like painterly texture overlaps with real-labeled artwork.",
-        "Photographic context around framed artwork may dominate its small generated region.",
-        "Fur and garden textures look familiar; probability 0.617 is just below the 0.620 threshold.",
-        "A product graphic has a large background and small artworks; resizing suppresses detail.",
-        "An infographic mixes text and cutouts, unlike a single isolated generated image.",
-        "A grainy monochrome portrait may evoke real photographic cues.",
-        "A saturated landscape has ordinary scene structure shared with real-labeled artwork.",
-        "A plausible mountain scene may favor semantic content over synthesis artifacts.",
-        "A promotional banner combines text and a small portrait; its 0.548 score misses the cutoff.",
-    ]
-    table(
-        ["Example", "Visual hypothesis"],
-        [[i + 1, t] for i, t in enumerate(hypotheses)],
-        [65, 463],
-    )
-    p(
-        "These observations are hypotheses, not causal attribution results. They motivate a future independent "
-        "data review and are not used to alter the current test evaluation."
-    )
-    h("2.7 Keras Tuner tool lab and eight project trials")
     toy = read("reports/training/toy_tuner/summary.json")
-    p(
-        "The built-in MNIST toy lab uses 6,000 training and 1,000 validation examples drawn only from MNIST's "
-        "training partition. RandomSearch tests two learning rates and two hidden sizes for three epochs. "
-        "The best setting is learning rate 0.01 and 64 units, validation loss 0.24696. Its four runs are logged separately on DagsHub."
-    )
     table(
-        ["Toy trial", "Learning rate", "Units", "Validation loss", "Accuracy"],
+        ["Toy trial", "Learning rate", "Units", "Val. loss", "Val. accuracy"],
         [
             [
                 r["trial_id"],
@@ -602,22 +449,23 @@ def main():
             ]
             for r in toy["trials"]
         ],
-        [70, 110, 70, 145, 133],
+        [78, 115, 75, 130, 130],
+        compact=True,
     )
     trials = []
     for i in range(8):
         hp = read(f"reports/training/keras_tuner/trial_{i}/configuration.json")[
             "hyperparameters"
         ]
-        m = read(f"reports/training/keras_tuner/trial_{i}/metrics.json")
+        metrics = read(f"reports/training/keras_tuner/trial_{i}/metrics.json")
         trials.append(
             [
                 i,
                 hp["learning_rate"],
                 hp["dropout"],
                 hp["unfrozen_layers"],
-                f"{m['validation_loss']:.5f}",
-                m["best_epoch"],
+                f"{metrics['validation_loss']:.5f}",
+                metrics["best_epoch"],
             ]
         )
     table(
@@ -630,104 +478,164 @@ def main():
             "Best epoch",
         ],
         trials,
-        [45, 105, 80, 115, 100, 83],
+        [42, 104, 75, 115, 102, 90],
+        compact=True,
     )
     p(
-        "The project search covers the complete two-level factorial grid: rates 0.00001/0.0001, dropout "
-        "0.2/0.5 and one/three unfrozen final-block convolution layers. All trials start from the same frozen "
-        "checkpoint. Trial 7 wins at 0.0001, dropout 0.5 and three unfrozen convolutions, validation loss "
-        "0.485135. Dropout has the largest marginal effect: mean validation loss falls by 0.02322 at 0.5. "
-        "Learning rate and unfrozen count have smaller average effects, but interactions and a small sample "
-        "limit causal claims. Selecting repeatedly on validation can overfit that set, even with early stopping."
-    )
-    p(
-        "Evidence: docs/tuning.md and reports/training/keras_tuner/summary.json. No search used test images."
+        "All eight project trials start from the same frozen checkpoint. <b>Trial 7 wins:</b> rate 0.0001, "
+        "dropout 0.5 and three unfrozen convolutions, validation loss 0.48514. Higher dropout has the "
+        "largest average effect (loss lower by 0.02322). Repeated selection can overfit validation; "
+        "the test set was never used for tuning."
     )
 
-    chapter("Task 3 - MLflow and DagsHub")
-    h("3.1 Local MLflow tool lab")
+    # 7: both models, all required plots, locked threshold explanation.
+    page("Task 2 - Final evaluation")
+    h("2.5 Model selection and threshold")
     p(
-        "A 16-unit Keras network trained on 1,200 MNIST training examples with 200 validation examples for "
-        "two epochs. Two local runs differ only in Adam rate: 0.001 versus 0.01. Each logs parameters, epoch "
-        "metrics, a loss plot and the model. The local SQLite-backed MLflow UI shows both runs and their "
-        "comparison. At this tiny budget, validation accuracy is 0.54 versus 0.80, respectively; this toy result "
-        "is not comparable with VisionGuard."
+        "Minimum validation loss selects trial 7 from eleven candidates. Threshold <b>0.6196606457</b> "
+        "minimizes 2 x false positives + false negatives on validation: calling a real image fake is "
+        "assigned twice the cost of missing an AI image. This is a product assumption. The CNN threshold "
+        "is 0.4725604951. Both choices were locked before the single test evaluation per model."
     )
-    shot("mlflow-comparison", "Local MLflow UI comparing the two real MNIST runs.")
-    shot(
-        "mlflow-comparison-metrics",
-        "Local comparison view with run times, learning rates and epoch-final metrics.",
-    )
+    results = []
+    for role in ["cnn_baseline", "champion"]:
+        metrics = read(f"reports/evaluation/{role}/metrics.json")
+        results.append(
+            [
+                role,
+                *[
+                    f"{metrics[k]:.4f}"
+                    for k in ["accuracy", "precision", "recall", "f1", "roc_auc"]
+                ],
+            ]
+        )
     table(
-        ["Term", "Meaning in this project"],
+        ["Model", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC"],
+        results,
+        [143, 77, 77, 77, 77, 77],
+        compact=True,
+    )
+    p(
+        "Test contains 147 images (81 AI, 66 real). The champion has TN=51, FP=15, FN=26, TP=55; "
+        "the CNN has TN=56, FP=10, FN=78, TP=3. Figures 12-15 use saved test probabilities; "
+        "hash-bound receipts prevent another inference pass."
+    )
+    for role, label in [("cnn_baseline", "CNN"), ("champion", "Champion")]:
+        row(
+            [
+                (
+                    f"reports/evaluation/{role}/confusion_matrix.png",
+                    label + " confusion matrix.",
+                ),
+                (f"reports/evaluation/{role}/roc.png", label + " ROC curve."),
+            ],
+            height=154,
+        )
+    p(
+        "Champion accuracy fell from 80.82% on validation to 72.11% on test. Small, diverse data and "
+        "repeated validation selection limit generalization. The weak CNN result is retained, and "
+        "test performance did not trigger further tuning. Predictions do not prove image origin."
+    )
+
+    # 8: the ten-image grid and one short hypothesis for each.
+    page("Task 2 - Error analysis")
+    h("2.6 Ten misclassified test images")
+    figure(
+        "reports/evaluation/misclassified_examples.png",
+        "First ten errors in fixed test-manifest order, selected from the saved evaluation.",
+        height=300,
+    )
+    p(
+        "All ten are false negatives because AI-labeled paths appear first in the manifest. They are "
+        "not representative of every error type; the full test also has 15 false positives."
+    )
+    hypotheses = [
+        "Multi-photo web layout may favor familiar photographic cues.",
+        "Nebula-like painterly texture overlaps with real-labeled artwork.",
+        "Photographic framing may dominate the small generated artwork.",
+        "Fur and garden textures look familiar; 0.617 lies just below the cutoff.",
+        "Small artworks in a product graphic lose detail after resizing.",
+        "Infographic text and cutouts differ from an isolated generated image.",
+        "Grainy monochrome portrait may resemble a real photograph.",
+        "Saturated landscape shares scene structure with real-labeled artwork.",
+        "Plausible mountain scenery may outweigh synthesis artifacts.",
+        "Banner text and small portrait dominate; probability 0.548 misses the cutoff.",
+    ]
+    table(
+        ["Example", "Visual hypothesis"],
+        [[i + 1, t] for i, t in enumerate(hypotheses)],
+        [58, 470],
+        compact=True,
+    )
+    p(
+        "These are visual hypotheses, not causal explanations. They suggest future data review "
+        "without changing the locked evaluation.",
+        "small",
+    )
+
+    # 9: local/remote toy and both logging modes in one page.
+    page("Task 3 - MLflow and DagsHub")
+    h("3.1 Local tool lab; 3.2 DagsHub setup")
+    p(
+        "A 16-unit MNIST network trains on 1,200 examples with 200 validation examples for two epochs. "
+        "Learning rates 0.001 and 0.01 give validation accuracy 0.54 and 0.80, respectively. "
+        "Both local runs log parameters, epoch metrics, model and loss plot. Repeating the 0.001 run "
+        "on DagsHub reproduces 0.54 accuracy (Figures 17-18)."
+    )
+    p(
+        "An <b>experiment</b> groups attempts; a <b>run</b> records one attempt; <b>parameters</b> "
+        "describe configuration; <b>metrics</b> measure performance; <b>artifacts</b> are saved files; "
+        "<b>tags</b> record context. Private DagsHub mirrors GitHub and provides the project MLflow "
+        "tracking URI. Credentials are read from environment variables in ignored .env files."
+    )
+    row(
         [
-            ["Experiment", "A named workspace grouping related runs."],
-            ["Run", "One recorded training attempt with an identity and lifecycle."],
-            [
-                "Parameter",
-                "A configuration value, such as learning rate, fixed for the attempt.",
-            ],
-            ["Metric", "A measured numeric result, often recorded at each epoch."],
-            ["Artifact", "A saved file such as a model, plot, CSV or package list."],
-            [
-                "Tag",
-                "Searchable context, such as source commit, seed or logging method.",
-            ],
+            (shot("mlflow-comparison-metrics"), "Local MLflow toy comparison."),
+            (shot("dagshub-toy"), "Verified DagsHub toy run."),
         ],
-        [95, 433],
-    )
-    h("3.2 DagsHub connection and toy repeat")
-    p(
-        "The private DagsHub project mirrors GitHub. Its MLflow tracking URI is "
-        "https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops.mlflow. The client reads credentials from "
-        "environment variables populated by ignored .env. git check-ignore confirms .env, .env.cloud and "
-        ".dvc/config.local stay untracked. A 0.001-rate toy run was repeated on DagsHub, with two epoch "
-        "records, its plot and model independently verified through the tracking API."
-    )
-    shot(
-        "dagshub-data",
-        "Private DagsHub project connected to GitHub with versioned data pointers.",
-    )
-    shot(
-        "dagshub-toy",
-        "DagsHub toy run, separate from VisionGuard training experiments.",
-    )
-    p(
-        "A first remote attempt accidentally retained the local tracking address: MLflow set_tracking_uri "
-        "updates the process environment. The correction captures the cloud address before selecting local "
-        "storage. The local diagnostic run is labeled, and only the corrected remote run is claimed as DagsHub evidence."
+        height=142,
     )
     h("3.3 Manual logging and TensorFlow autologging")
     p(
-        "The CNN uses a Keras callback to log epoch loss, accuracy, AUC, precision, recall and learning rate. "
-        "It explicitly adds seed, source commit, DVC checksum, split artifacts and selected checkpoint. The "
-        "two MobileNet stages use TensorFlow autologging for fit parameters, optimizer data, epoch metrics "
-        "and TensorBoard evidence. Automatic final-model upload is disabled; the best validation checkpoint "
-        "is logged explicitly. Autologging does not replace project-specific provenance, layer-boundary "
-        "checks, cost-based threshold choice or exact validation/test metrics. Tuner trials use explicit logging."
+        "The CNN callback manually logs epoch loss, accuracy, precision, recall, AUC and learning rate. "
+        "MobileNet uses TensorFlow autologging for fit configuration and epoch metrics. Both explicitly "
+        "add seed, Git revision, DVC hash, split lists and the best checkpoint. Auto-upload of the final "
+        "model is disabled so it cannot replace the best checkpoint; tuner trials log explicitly."
     )
-    shot(
-        "dagshub-manual-run",
-        "CNN run evidence: manually logged metrics and project context.",
+    row(
+        [
+            (shot("dagshub-manual-run"), "CNN manual logging."),
+            (shot("dagshub-autolog-run"), "Frozen MobileNet autologging."),
+        ],
+        height=142,
     )
-    shot(
-        "dagshub-autolog-run",
-        "MobileNet frozen-stage evidence with framework autologging and explicit provenance.",
-    )
-    h("3.4 Required artifacts")
     p(
-        "Training runs include the native Keras checkpoint, MLflow model, configuration, package list, split "
-        "lists, layer summary, curves and validation outputs. The final evaluation run stores both models' "
-        "test confusion matrices, ROC curves and saved predictions, and final test metrics are attached to "
-        "the original training runs. Keeping evaluation separate preserves the original training provenance."
+        "A local/remote tracking-address mix-up in the toy lab was corrected by capturing the cloud URI "
+        "before switching to local storage. Only the independently verified remote run is claimed here.",
+        "small",
     )
-    shot(
-        "dagshub-artifacts",
-        "MLflow artifact browser showing saved model and reporting files.",
+
+    # 10: comparison table and the essential artifact/registry evidence.
+    page("Task 3 - Comparison and registry")
+    h("3.4 Artifacts; 3.5 Meaningful comparison")
+    p(
+        "Runs retain model, configuration, packages, split lists, layer summary, training curves and "
+        "validation outputs. Final evaluation stores both models' test plots and saved predictions, "
+        "with final metrics attached to the originating training runs. The table compares eleven "
+        "candidates; six distinct tuning runs are also shown in Figure 22."
     )
-    h("3.5 Meaningful experiment comparison")
+    candidates = [
+        *read("reports/training/model_comparison.json")["models"],
+        *[
+            {
+                "model": f"tuner_{i}",
+                **read(f"reports/training/keras_tuner/trial_{i}/metrics.json"),
+            }
+            for i in range(8)
+        ],
+    ]
     table(
-        ["Candidate", "Validation loss", "Accuracy at 0.5", "ROC-AUC"],
+        ["Candidate", "Val. loss", "Accuracy at 0.5", "Val. ROC-AUC"],
         [
             [
                 r["model"],
@@ -735,493 +643,339 @@ def main():
                 f"{r['validation_accuracy']:.4f}",
                 f"{r['validation_roc_auc']:.4f}",
             ]
-            for r in [
-                *read("reports/training/model_comparison.json")["models"],
-                *[
-                    {
-                        "model": "tuner_" + str(i),
-                        **read(f"reports/training/keras_tuner/trial_{i}/metrics.json"),
-                    }
-                    for i in range(8)
-                ],
-            ]
+            for r in candidates
         ],
-        [230, 100, 105, 93],
+        [210, 96, 116, 106],
+        compact=True,
     )
+    row(
+        [
+            (shot("dagshub-artifacts"), "Saved model and reporting artifacts."),
+            (shot("dagshub-comparison"), "Six runs with distinct tuning parameters."),
+        ],
+        height=116,
+    )
+    h("3.6 Registry and independent alias load")
     p(
-        "The table compares the CNN, frozen MobileNet, last-block fine-tune and eight controlled tuner "
-        "combinations. Minimum validation loss selects the model before cost-based threshold selection. "
-        "The frozen network outperformed the first fine-tune; tuned dropout improved the best candidate. "
-        "Final test results are reported as a check on the locked choice, not as another selection round."
+        "Registry <b>23L-0907_A2_Ops</b> contains version 1 (frozen MobileNet) and version 2 "
+        "(tuned MobileNet); alias <b>champion</b> points to version 2. The separate script "
+        "scripts/predict_registry.py loads models:/23L-0907_A2_Ops@champion and predicts a validation "
+        "image: probability 0.9492709637 at saved threshold 0.6196606457 (Figures 23-24)."
     )
-    shot(
-        "dagshub-comparison",
-        "Six selected DagsHub tuning runs with meaningful parameter differences; all eight are tabulated above.",
-    )
-    h("3.6 Registry and alias-based inference")
-    p(
-        "Registry 23L-0907_A2_Ops contains version 1 (frozen MobileNet) and version 2 (tuned MobileNet). "
-        "The champion alias points to version 2. scripts/predict_registry.py independently loads "
-        "models:/23L-0907_A2_Ops@champion, applies the shared preprocessing, and classifies a validation "
-        "image. Its saved probability 0.9492709637 and threshold 0.6196606457 reproduce the selected bundle. "
-        "No test image is used for that demonstration."
-    )
-    shot(
-        "dagshub-registry",
-        "Two registered versions, with champion assigned to version 2.",
-    )
-    shot("registry-load", "Recorded separate alias-load prediction and model identity.")
-
-    chapter("Task 4 - Flask application")
-    h("4.1 Inference lifetime and matching preprocessing")
-    p(
-        "visionguard/serving.py loads the native Keras champion once when the worker starts, validates "
-        "its hash/policy and warms it with synthetic pixels. The native implementation remains available "
-        "in the retained image and read-only bundle. Current Flask serving uses one RemoteModelService "
-        "per worker and calls the cloud export; the Vercel process loads its interpreter once per warm "
-        "instance. A cold start or another instance loads its own copy. DagsHub is not queried on requests."
-    )
-    p(
-        "Loading weights per request would waste CPU, increase latency and memory churn, and risk selecting "
-        "an inconsistent version. Both native and cloud paths use RGB white letterboxing and normalization "
-        "inside the model. The float32 export matched all 146 validation decisions; test was not used for conversion. "
-        "The two original known validation-image checks are recorded in reports/application/verification.json."
-    )
-    h("4.2 Routes and input validation")
-    p(
-        "GET / displays upload; POST /predict returns a saved result; GET /result/&lt;id&gt; reads it; "
-        "GET /history paginates database records; GET /health checks readiness. The validator checks the "
-        "form token, one file, sanitized basename, extension, decoded format, file bytes, decoded pixels "
-        "and still-image content. The remote contract allows JPEG, PNG and WebP up to 4 MiB and 4 million "
-        "pixels. Images stay in memory and are discarded; only metadata and results are retained."
-    )
-    for name, caption in [
-        ("app-wrong-type", "Wrong file type: friendly saved rejection (HTTP 415)."),
-        (
-            "app-corrupt",
-            "PNG-like bytes that cannot decode: friendly saved rejection (HTTP 400).",
-        ),
-        ("app-too-large", "Oversized file: friendly saved rejection (HTTP 413)."),
-    ]:
-        shot(name, caption)
-    h("4.3 Upload, result and history interface")
-    p(
-        "The HTML/CSS interface offers an upload preview, verdict and confidence, a visible model caveat, "
-        "and a history menu that reads PostgreSQL. The upload page explains cloud transmission and data "
-        "retention. The API key is never exposed to browser JavaScript. Unknown result IDs return a friendly 404."
-    )
-    shot(
-        "app-upload",
-        "Local upload interface with limits and cloud-transmission disclosure.",
-    )
-    shot(
-        "app-result",
-        "Saved cloud-backed result showing verdict, confidence, model version and caveat.",
-    )
-    h("4.4 Environment settings, debug and server")
-    p(
-        "Model/policy paths, saved threshold, database URL, session secret, disk reserve and remote settings "
-        "come from environment variables. A supplied threshold must match the saved policy. Debug is "
-        "disabled to avoid interactive tracebacks and development behavior. The app was checked under "
-        "Flask's server during development; Compose uses Gunicorn with one worker and two threads. Health "
-        "reports a remote backend without claiming local weights are loaded."
-    )
-    shot(
-        "app-health",
-        "Current health JSON: PostgreSQL, Vercel model, saved threshold, debug off and disk reserve.",
+    row(
+        [
+            (shot("dagshub-registry"), "Two versions and champion alias."),
+            (shot("registry-load"), "Recorded independent alias-load prediction."),
+        ],
+        height=112,
     )
 
-    chapter("Task 5 - PostgreSQL database trail")
+    # 11: the app and PostgreSQL form one coherent workflow.
+    page("Tasks 4-5 - Flask and PostgreSQL")
+    h("4.1 Model loading; 4.2 Routes and guards")
     p(
-        "The predictions table records UUID, UTC time, sanitized filename, image SHA-256/bytes/dimensions, "
-        "status, error code/message, label, AI probability, confidence, threshold, processing time, model name, "
-        "version, run ID, artifact hash and preprocessing policy. SQLAlchemy uses short transactions and "
-        "parameterized queries. A successful prediction is not shown as saved if the database write fails. "
-        "Invalid uploads and remote failures are recorded with safe messages; failed attempts have no verdict."
-    )
-    code(
-        "SELECT created_at, status, label, confidence, model_version\nFROM predictions ORDER BY created_at DESC LIMIT 10;"
+        "Native serving loads and validates the champion once per worker and uses the training decoder. "
+        "The retained native image and model remain available. Current Flask uses one remote client per "
+        "worker; the cloud interpreter loads once per warm instance. Two original validation-image checks "
+        "and all 146 validation export-parity decisions are recorded; no test data was reused."
     )
     p(
-        "The history menu renders these rows rather than a browser-only list. UTC is labeled in the UI. "
-        "A named Docker volume preserves history across container recreation. Saved snapshots compared "
-        "all original row fields, not just counts. All 11 original records survived Docker and cloud integration; "
-        "the eight explicitly named integration/browser checks brought the count to 19. This final audit "
-        "does not delete those records or rewrite old model hashes."
+        "Routes provide upload, prediction, saved result, paginated history and health. Upload checks "
+        "cover form token, one file, sanitized name, type, decoding, 4 MiB bytes and 4 million pixels. "
+        "JPEG, PNG and WebP stay in memory; only metadata and outcomes are stored."
     )
-    shot(
-        "app-history",
-        "PostgreSQL-backed history, including successful checks and safely recorded failures.",
+    h("4.3 Interface; 4.4 Configuration")
+    p(
+        "HTML/CSS presents upload, verdict/confidence and history (Figures 25-28). Environment variables "
+        "supply database, model policy, server secrets and cloud settings. Debug is off; the development "
+        "Flask server was checked, and Compose runs Gunicorn with one worker and two threads. "
+        "A configured threshold must match the saved policy; the API key stays server-side."
+    )
+    row(
+        [
+            (shot("app-upload"), "Local upload page."),
+            (shot("app-result"), "Saved verdict, confidence and version."),
+        ],
+        height=136,
+    )
+    h("Task 5 - Persistent database trail")
+    p(
+        "PostgreSQL records UTC time, safe filename, image hash/size, status, label, probability, "
+        "confidence, threshold, latency and model version/identity. Rejections and cloud failures "
+        "have safe error fields and no verdict. SQLAlchemy transactions back the history menu; "
+        "an external named volume preserves rows across recreation. All <b>11 original rows</b> "
+        "survived; eight integration checks brought the total to <b>19</b>."
+    )
+    row(
+        [
+            (shot("app-history"), "PostgreSQL-backed history."),
+            (shot("app-health"), "Healthy database, remote model and debug off."),
+        ],
+        height=125,
     )
 
-    chapter("Task 6 - Docker and continuous integration")
-    h("6.1 Docker warm-up")
+    # 12: Docker facts and three concise, genuine evidence panels.
+    page("Task 6 - Docker Compose")
+    h("6.1 Ready-made image lab")
     p(
-        "A disposable official postgres:17-alpine container demonstrated run, loopback port mapping, a new "
-        "named volume, logs, shell access, listing, stop, start and restart. A temporary image tag was "
-        "created and removed, then only the lab container and lab volume were deleted. The original image "
-        "was retained because the real database uses it. Production containers and their volume were not touched."
+        "An isolated postgres:17-alpine lab exercised run, ports, volume, logs, shell, listing, stop, "
+        "start, restart and cleanup. An image is a template; a container is its instance; a layer is "
+        "a cached build change; a volume outlives a container; port mapping forwards a host port. "
+        "Only lab resources were removed. This warm-up and the DVC toy were completed during final audit."
     )
+    h("6.2 Image design; 6.3 Compose configuration")
     table(
-        ["Term", "Meaning"],
+        ["Component", "Configuration and reason"],
         [
             [
-                "Image",
-                "An immutable template of filesystem content and runtime defaults.",
+                "Images",
+                "Pinned Python slim; dependencies copied before source for caching; UID 10001; CPU-only native image and smaller remote client.",
             ],
             [
-                "Container",
-                "A running or stopped instance with its own process and writable state.",
+                "Build context",
+                "Allowlisted serving files; exclude secrets, dataset, weights, Git metadata and training tools; no pip cache.",
             ],
             [
-                "Layer",
-                "A cached filesystem change produced by an image build instruction.",
+                "Services",
+                "web + db; web uses db:5432 and waits for database health. Health probes check readiness.",
             ],
-            ["Volume", "Docker-managed storage that outlives a container."],
             [
-                "Port mapping",
-                "Forwarding a selected host address/port to a container's port.",
+                "Persistence",
+                "Existing external PostgreSQL volume; read-only champion/policy mount; read-only root with 128 MiB tmpfs.",
+            ],
+            [
+                "Ports / secrets",
+                "Web 127.0.0.1:5000 and DB admin 127.0.0.1:5433; ignored environment file; no public database port.",
             ],
         ],
-        [100, 428],
+        [87, 441],
+        compact=True,
     )
-    shot("docker-warmup", "Recorded ready-made image lab commands and cleanup receipt.")
-    h("6.2 Dockerfiles and secret handling")
+    h("6.4 Size reduction and layers")
     p(
-        "Dockerfile builds the CPU-only native server; Dockerfile.client builds the current lightweight "
-        "remote client. Both start from pinned Python slim images, install pinned dependencies before copying "
-        "source, run as UID 10001 and include an HTTP health probe. Dependency-first ordering preserves the "
-        "large install layer when only source changes. Deny-by-default ignore files allow only serving "
-        "inputs. Dataset images, weights, Git metadata, .env files and training tools do not enter image layers."
+        "docker image ls reports native <b>1.72 GB</b> versus client <b>395 MB</b>, about 77% smaller. "
+        "Moving inference out of the web image removes TensorFlow, trading offline use for a network "
+        "dependency. docker history shows the largest install layer falling from 1.22 GB to 63.9 MB."
     )
+    row(
+        [
+            (shot("docker-warmup"), "Recorded Docker warm-up and cleanup."),
+            (shot("docker-stack"), "Healthy services and preserved mounts."),
+        ],
+        height=119,
+    )
+    h("6.5 Failure diagnosis and recovery")
     p(
-        "The native image deliberately uses tensorflow-cpu and removes unused development headers. The "
-        "client needs Flask, PostgreSQL, Pillow and Requests only. It retains the saved policy mount but "
-        "does not install a local model runtime. The actual image is imported from a verified private CI "
-        "artifact to avoid a local rebuild. The downloaded archive was removed after import."
+        "In the isolated native lab, a missing model mount caused FileNotFoundError for policy.json. "
+        "Adding the read-only bundle restored HTTP 200, loaded=true and healthy PostgreSQL (Figure 31). "
+        "Logs, shell and lifecycle commands were checked; earlier database recreation preserved history."
     )
-    h("6.3 Two-service Compose stack")
-    p(
-        "compose.yaml defines web and db; compose.cloud.yaml overrides web for remote inference. The setup "
-        "script preserves database and session secrets and sets COMPOSE_FILE so normal Compose commands "
-        "select both files. web uses db:5432 on the private Compose network, waits for the database health "
-        "check, and publishes only 127.0.0.1:5000. PostgreSQL's administration mapping is loopback-only "
-        "127.0.0.1:5433; there is no public bind. Passwords come from ignored .env and placeholders are "
-        "provided in .env.example. The external named history volume is reused, and the champion directory "
-        "is mounted read-only. The root filesystem is read-only with a bounded temporary memory mount."
-    )
-    shot(
-        "docker-stack",
-        "Recorded healthy services, UID, volume, read-only mount and loopback-only port bindings.",
-    )
-    h("6.4 Size and layer analysis")
-    p(
-        "The same docker image ls measurement reports 1.72 GB for the retained native TensorFlow image "
-        "and 395 MB for the remote-client image, a reduction of about 77%. This optimization removes "
-        "TensorFlow and numerical model dependencies from the local web image after moving inference to "
-        "Vercel. It trades offline inference for network dependency; native serving remains available. "
-        "Registry/archive compressed byte sizes are different measurements and are not mixed with these values."
-    )
-    p(
-        "docker history identifies dependency installation as the largest layer in both images, with the "
-        "native TensorFlow install layer at 1.22 GB versus the client's 63.9 MB install layer. Slim base, no pip cache, no compiler and an allowlisted build "
-        "context reduce size further. The exact history output is in reports/labs/docker/verification.json."
-    )
-    h("6.5 Operations, failure diagnosis and recovery")
-    p(
-        "The isolated lab also ran the native web image against its disposable database. Omitting the "
-        "champion mount made the Gunicorn worker exit. Logs showed FileNotFoundError for policy.json, "
-        "which identified a missing serving bundle rather than a database problem. Adding the existing "
-        "bundle as a read-only mount restored HTTP 200 with loaded=true and healthy PostgreSQL. Shell, "
-        "logs, stop, start and restart were exercised for both services, and all temporary resources were removed."
-    )
-    shot(
-        "docker-failure",
-        "Actual missing-policy worker log and the corrected healthy native model response.",
-    )
-    p(
-        "Earlier production checks also recreated PostgreSQL and confirmed the original rows after recovery. "
-        "A temporary outage returned 503 and then recovered without restarting the Gunicorn worker. "
-        "These receipts are retained under reports/container and reports/application."
-    )
-    h("6.6 GitHub Actions red/green lab and project CI")
-    p(
-        "The separate authorized private CI lab has a Python 3.11/3.12 matrix. Its initial arithmetic test "
-        "expects 2+2=5 and fails on both versions; the next commit corrects the expectation to 4 and passes. "
-        "The main repository workflow installs pinned dependencies, checks repository content, runs Ruff "
-        "and synthetic tests, builds the native image, starts an isolated Compose stack, validates five "
-        "uploads, recreates containers and checks persistence. It also builds the lightweight client and "
-        "checks that TensorFlow, MLflow and DVC are absent. The README contains the CI badge."
-    )
-    for name, caption in [
-        ("ci-red", "The toy matrix fails on Python 3.11 and 3.12 as intended."),
-        ("ci-green", "The corrected toy test passes on both Python versions."),
-        (
-            "ci-project",
-            "Main project CI passes lint, tests, Docker builds and Compose checks.",
-        ),
-    ]:
-        shot(name, caption)
-    p(
-        "CI's generated database/session settings stay in ignored runner files. Actions secrets belong in "
-        "GitHub repository or protected-environment secret storage and are referenced by name, never "
-        "embedded in YAML. The separately authorized API-only secret is used solely by the manually "
-        "triggered public API check. Its reports omit request headers and bodies and its temporary secret "
-        "file is removed. No training account credential is available to that job."
+    figure(
+        shot("docker-failure"),
+        "Actual missing-policy log and corrected health response.",
+        height=105,
     )
 
-    chapter("Task 7 - Cloud model API deployment")
-    h("Deployment design and limits")
+    # 13: concise CI evidence and reproduction/handoff.
+    page("Task 6 - Automated checks")
+    h("6.6 Failing-then-passing CI lab")
     p(
-        "The model API is on Vercel Hobby, with no billing details or paid add-ons. A float32 LiteRT export "
-        "avoids the TensorFlow function-size problem while preserving the Keras champion. The runtime "
-        "measured roughly 179 MiB locally and fits the provider's Python bundle allowance. Request bodies "
-        "have a provider limit of 4.5 MB, so the app caps files at 4 MiB plus multipart headroom. Cold starts "
-        "can add delay. Hobby is for personal non-commercial use and quota exhaustion can pause service; "
-        "this is a free-tier demonstration rather than an availability guarantee."
+        "The private 23L-0907_A2_Ops-ci-lab repository runs Python 3.11 and 3.12. The first commit "
+        "deliberately expects 2+2=5 and fails; correcting the expectation to 4 makes both versions pass "
+        "(Figures 32-33). Each result belongs to a separate committed workflow run."
     )
-    h("Deployment steps and rationale")
+    row(
+        [
+            (shot("ci-red"), "Expected failure on both Python versions."),
+            (shot("ci-green"), "Corrected test passes on both versions."),
+        ],
+        height=141,
+    )
+    h("Project tests and Docker build checks")
+    p(
+        "Main CI checks repository hygiene, Ruff, synthetic tests, native/client Docker builds and an "
+        "isolated Compose upload/persistence test. The graded implementation passed <b>141 tests</b> "
+        "and Docker/Compose checks. The README includes its CI badge; the screenshot below shows the "
+        "project workflow, and the exact graded-revision run is linked below."
+    )
+    figure(
+        shot("ci-project"),
+        "Passing main project workflow with build and test jobs.",
+        height=144,
+    )
+    p(
+        "<link href='https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40127571425'>"
+        "Graded-revision CI run 40127571425</link>. Routine CI uses generated runner credentials. "
+        "The separately authorized cloud API key is an encrypted GitHub Actions secret used only "
+        "by the manual Postman check; it is never embedded in source or reports."
+    )
+    h("Reproduction and handoff")
+    p(
+        "Check free space with scripts/check_disk.py, restore missing assets using dvc pull, then "
+        "use docker compose up -d --no-build --wait with the configured cloud override. Full setup "
+        "is in README.md and docs/cloud-integration.md. The report builder reads saved results only. "
+        "Do not rerun the one-time test evaluator to regenerate the report."
+    )
+    p(
+        "For submission: review this PDF, grant the grader access to both private repositories and "
+        "share the API key privately if required. Source pushes contain no credentials, dataset/model "
+        "binaries, agent files or decorative icons.",
+        "small",
+    )
+
+    # 14: deployment steps, live readiness and genuine external Postman run.
+    page("Task 7 - Cloud deployment")
+    p(
+        "Vercel Hobby hosts the key-protected model API while Flask and PostgreSQL stay local. "
+        "The float32 LiteRT export avoids shipping TensorFlow in the function and matched every "
+        "validation decision. Render required card verification; Vercel was used without paid add-ons."
+    )
     table(
-        ["Step", "Action and purpose"],
+        ["Step", "Deployment action"],
         [
             [
-                "1",
-                "Lock the validation-selected champion; export float32 LiteRT with inference behavior and verify all 146 validation decisions. Do not use test.",
+                1,
+                "Lock champion and threshold; export float32 LiteRT and verify validation parity.",
             ],
             [
-                "2",
-                "DVC-version the export; create a model-only private release archive. Pin archive and file SHA-256 values in cloud/model-manifest.json.",
+                2,
+                "DVC-version the export; prepare a model-only archive and pin its SHA-256 manifest.",
             ],
             [
-                "3",
-                "Create the Vercel Hobby Python project in fra1. Keep the course project identity; use a DNS-safe deployment name.",
+                3,
+                "Create the Hobby Python project in fra1 with pinned lightweight dependencies.",
+            ],
+            [4, "Set cloud.wsgi:app; fetch and verify the model bundle during build."],
+            [
+                5,
+                "Supply a short-lived model-only URL and a new API key as encrypted settings.",
             ],
             [
-                "4",
-                "Use pyproject.toml to point at cloud.wsgi:app with pinned lightweight dependencies. vercel.json fetches and verifies the model at build time.",
+                6,
+                "Deploy reviewed source; confirm READY and public health. POST /predict requires the key.",
             ],
             [
-                "5",
-                "Supply a fresh short-lived model-only download URL and a new API key as encrypted production settings. Keep all account tokens and local history off the provider.",
-            ],
-            [
-                "6",
-                "Deploy the reviewed source after CI. Keep automatic Git deployment disabled. Confirm READY, public health and authenticated prediction.",
-            ],
-            [
-                "7",
-                "Run the versioned Postman collection from GitHub's hosted runner, a network separate from the laptop, and retain the credential-free results.",
+                7,
+                "Run the Postman collection from a separate GitHub-hosted network; retain safe results.",
             ],
         ],
-        [45, 483],
+        [34, 494],
+        compact=True,
     )
-    p(
-        "The earlier Render Free route required card verification. No billing details were added and no "
-        "Render service was created. Vercel was selected with the user's approval. Initial Vercel SSO "
-        "protection was explicitly disabled only for this API project; POST /predict still requires its API key. "
-        "The model download URL is refreshed before a future build because it expires. The serving API "
-        "uses its bundled model and does not fetch DagsHub or the release on each request."
+    row(
+        [
+            (shot("cloud-health"), "Public cloud readiness with model identity."),
+            (shot("postman-output"), "Actual external Postman CLI result."),
+        ],
+        height=115,
     )
-    shot(
-        "cloud-health",
-        "Public cloud health response identifies the exact export, source model, version and threshold.",
-    )
-    h("Postman test and logged result from another network")
+    h("External Postman validation")
     postman = read("reports/labs/postman/verification.json")
     table(
-        ["Request", "HTTP status", "Response ms"],
+        ["Request", "HTTP", "Response ms"],
         [[r["name"], r["http_status"], r["response_ms"]] for r in postman["results"]],
-        [330, 95, 103],
+        [354, 70, 104],
+        compact=True,
     )
     p(
-        "Official Postman CLI 1.76.0 ran the local collection on a GitHub-hosted Ubuntu runner: six requests, "
-        "13 assertions, zero failures. The three generated images returned consistent scores/verdicts and "
-        "the pinned champion hash and threshold; missing authorization returned 401 and invalid text "
-        "returned 415. No Postman account or cloud workspace was used. The key traveled only to the "
-        "approved encrypted GitHub Actions secret and the intended Vercel prediction endpoint."
-    )
-    shot(
-        "postman",
-        "Successful Postman workflow from a separate network; the private artifact contains header/body-free results.",
-    )
-    shot(
-        "postman-output",
-        "Actual Postman CLI output: six requests and thirteen passing assertions.",
+        "Postman CLI 1.76.0 ran six requests and <b>13 assertions with zero failures</b> on a hosted "
+        "Ubuntu runner. Generated red, blue and white images test wiring, not accuracy. "
+        "The versioned collection is postman/visionguard.postman_collection.json."
     )
     p(
-        "Run: <link href='"
-        + postman["workflow_run"]
-        + "'>"
-        + postman["workflow_run"]
-        + "</link>. "
-        "The importable collection is postman/visionguard.postman_collection.json. Add the API key to a "
-        "private local Postman environment when testing manually; never paste it into the collection or URL."
+        "Live URL: <link href='https://23l-0907-a2-ops-api.vercel.app/health'>"
+        "https://23l-0907-a2-ops-api.vercel.app/health</link>. "
+        "Cold starts and free-tier quotas affect availability; a new build needs a refreshed model-download URL. "
+        "Automatic Git deployment is disabled.",
+        "small",
     )
 
-    chapter("Task 8 - Local Flask and cloud API integration")
+    # 15: complete integration, error handling, and brief references.
+    page("Task 8 - Local-to-cloud integration")
     p(
-        "Local validation runs first, then the server sends a generic upload filename over verified HTTPS "
-        "to the pinned Vercel origin. It reuses connections per thread, uses a 3-second connect timeout and "
-        "45-second read timeout, disables redirects and does not automatically retry POSTs. The client "
-        "bounds JSON responses to 16 KiB and verifies model/version/hashes, saved threshold, finite "
-        "probability, verdict, confidence and input dimensions before storing a success."
+        "After local validation, Flask sends the image over verified HTTPS to Vercel. The client uses "
+        "a <b>3-second connect timeout and 45-second read timeout</b>, no redirects and no automatic "
+        "POST retries. It bounds JSON to 16 KiB and checks version, hashes, saved threshold, score, "
+        "verdict, confidence and dimensions before recording success."
     )
     table(
-        ["Generated input", "AI probability", "Verdict", "PostgreSQL result"],
+        ["Generated input", "AI probability", "Verdict", "History"],
         [
             ["Red", "0.0782903", "real", "saved success"],
             ["Blue", "0.1078499", "real", "saved success"],
             ["White", "0.0190690", "real", "saved success"],
         ],
-        [115, 130, 105, 178],
+        [135, 135, 100, 158],
+        compact=True,
+    )
+    row(
+        [
+            (shot("app-red"), "Red input result."),
+            (shot("app-blue"), "Blue input result."),
+            (shot("app-result"), "White input result."),
+        ],
+        height=94,
     )
     p(
-        "These solid-color images test wiring and parity, not model accuracy. Their cloud results match "
-        "the local LiteRT reference within 0.0001. The same browser upload/result/history path was exercised "
-        "with a generated white PNG. No dataset file was sent to the cloud for these checks."
-    )
-    shot(
-        "integration-results",
-        "Recorded multiple localhost-to-cloud results and their PostgreSQL identifiers.",
-    )
-    shot(
-        "app-red",
-        "Saved red-input cloud result, read back through the local Flask interface.",
-        235,
-    )
-    shot(
-        "app-blue",
-        "Saved blue-input cloud result, read back through the same local interface.",
-        235,
+        "All three generated inputs matched the local LiteRT reference within 0.0001. The browser "
+        "upload/result/history flow was checked; no dataset image was sent for these integration tests."
     )
     table(
-        ["Failure", "HTTP result", "Recorded behavior"],
-        [
-            ["Connect/read timeout", "504", "cloud_timeout; no successful verdict"],
-            [
-                "Network/TLS/upstream failure",
-                "503",
-                "cloud_unavailable; safe retry guidance",
-            ],
-            ["Busy/rate-limited model", "503", "cloud_busy; Retry-After"],
-            [
-                "Wrong API key",
-                "503",
-                "cloud_authentication; connection needs attention",
-            ],
-            [
-                "Malformed or mismatched result",
-                "502",
-                "cloud_invalid_response; no accepted score",
-            ],
-        ],
-        [190, 75, 263],
-    )
-    p(
-        "Timeout and network failures were injected into isolated Flask test applications sharing PostgreSQL; "
-        "the running web container and cloud service were not interrupted. Both failures wrote error rows "
-        "with null prediction fields, and history remained readable. Health probes have short bounded "
-        "timeouts and cache readiness. There is no silent local-model fallback. All 11 original rows and "
-        "the native champion files remained byte-for-byte unchanged."
-    )
-    shot(
-        "app-timeout",
-        "Saved timeout error is readable through the live local app and links back to history.",
-    )
-    p(
-        "The production client uses the same local PostgreSQL volume, persistent session secret and saved "
-        "threshold. Upload guards require 2 GiB plus a 128 MiB safety buffer. Logs rotate, uploaded files "
-        "are not persisted, and disposable lab resources were removed. The minimum observed free space "
-        "during the final Docker lab was 2.41 GiB, above the reserve."
-    )
-
-    chapter("Submission checklist and reproducibility")
-    table(
-        ["Item", "State"],
+        ["Condition", "HTTP", "Outcome"],
         [
             [
-                "Named PDF",
-                "23L-0907_VisionGuard.pdf, with name, links, source hash, assistance disclosure and task chapters",
+                "Wrong / corrupt / oversized file",
+                "415 / 400 / 413",
+                "Friendly saved rejection",
             ],
+            ["Connect or read timeout", "504", "cloud_timeout; no verdict"],
             [
-                "GitHub / DagsHub",
-                "Private repositories with clean commits, DVC metadata, experiments and registry; student will grant grading access",
+                "Network, authentication or busy service",
+                "503",
+                "Safe error and retry guidance",
             ],
-            [
-                "Live API",
-                "Public health; key-protected POST /predict tested from a separate GitHub-hosted network",
-            ],
-            [
-                "Local UI/history",
-                "Flask to Vercel integration active; original PostgreSQL rows and native model preserved",
-            ],
-            [
-                "Evaluation integrity",
-                "Two locked model test passes, one per model; no later test reuse",
-            ],
-            [
-                "Repository hygiene",
-                "No credentials, data/model binaries, agent files or decorative emoji in committed source",
-            ],
-            ["Bonus", "Optional Grad-CAM not attempted"],
+            ["Invalid or mismatched response", "502", "Rejected score; no success row"],
         ],
-        [145, 383],
+        [225, 95, 208],
+        compact=True,
+    )
+    row(
+        [
+            (shot("app-wrong-type"), "Wrong type rejected."),
+            (shot("app-corrupt"), "Corrupt image rejected."),
+            (shot("app-too-large"), "Oversized image rejected."),
+        ],
+        height=87,
+    )
+    row(
+        [
+            (shot("integration-results"), "Recorded cloud results and database IDs."),
+            (shot("app-timeout"), "Saved timeout with a readable history link."),
+        ],
+        height=105,
     )
     p(
-        "Before handing in, review this report, share both private repository links with the grader, and "
-        "provide the API key through the instructor's private channel if authenticated prediction access "
-        "is needed. Do not place it in the PDF. There is no instructor page limit currently specified."
-    )
-    h("Reproduction commands")
-    code(
-        ".venv/bin/python scripts/check_disk.py\n.venv/bin/dvc pull -j 2\n.venv/bin/python scripts/check_repository.py --history\n.venv/bin/python -m ruff check scripts visionguard tests docker cloud wsgi.py gunicorn.conf.py\n.venv/bin/python -m pytest -q\nsudo docker compose up -d --no-build --wait"
+        "Injected timeout/network failures wrote error rows without interrupting production services. "
+        "Original PostgreSQL rows and native model files remained unchanged. Uploads are not saved, "
+        "logs rotate and disk guards preserve the <b>2 GiB reserve</b>.",
+        "small",
     )
     p(
-        "dvc pull needs private access and sufficient space for missing objects; do not copy another full "
-        "dataset on this constrained disk. CI builds on a fresh runner. The report builder consumes saved "
-        "metrics and screenshots and performs no inference. The one-time final evaluator must not be "
-        "rerun merely to regenerate figures. Consult docs/model-selection.md, docs/cloud-api.md and "
-        "docs/cloud-integration.md for the model release and server-only settings."
-    )
-    h("References and evidence index")
-    for label, url in [
-        (
-            "Assignment dataset",
-            "https://www.kaggle.com/datasets/cashbowman/ai-generated-images-vs-real-images",
-        ),
-        ("Keras transfer learning", "https://keras.io/guides/transfer_learning/"),
-        (
-            "MLflow TensorFlow tracking",
-            "https://mlflow.org/docs/latest/api_reference/python_api/mlflow.tensorflow.html",
-        ),
-        ("DVC remote storage", "https://doc.dvc.org/command-reference/remote/add"),
-        (
-            "Docker Compose services",
-            "https://docs.docker.com/reference/compose-file/services/",
-        ),
-        (
-            "GitHub Actions security",
-            "https://docs.github.com/en/actions/reference/security/secure-use",
-        ),
-        ("Vercel Hobby", "https://vercel.com/docs/plans/hobby"),
-        ("Vercel function limits", "https://vercel.com/docs/functions/limitations"),
-        (
-            "Postman local collection runs",
-            "https://learning.postman.com/docs/postman-cli/postman-cli-run-collection",
-        ),
-    ]:
-        p(f"{escape(label)}: <link href='{url}'>{url}</link>", "Reference")
-    p(
-        "Detailed task-to-file mapping: docs/assignment-checklist.md. Machine-readable receipts: "
-        "reports/data, reports/training, reports/selection, reports/evaluation, reports/registry, "
-        "reports/application, reports/container, reports/continuous-integration, reports/cloud, "
-        "reports/integration and reports/labs. Figures are generated from those recorded results. "
-        "Original command logs, database backups, secrets and runtime caches remain ignored."
+        "<b>References:</b> "
+        "<link href='https://www.kaggle.com/datasets/cashbowman/ai-generated-images-vs-real-images'>Kaggle dataset</link>; "
+        "<link href='https://keras.io/guides/transfer_learning/'>Keras</link>; "
+        "<link href='https://mlflow.org/docs/latest/index.html'>MLflow</link>; "
+        "<link href='https://doc.dvc.org/'>DVC</link>; "
+        "<link href='https://docs.docker.com/compose/'>Docker Compose</link>; "
+        "<link href='https://docs.github.com/en/actions'>GitHub Actions</link>; "
+        "<link href='https://vercel.com/docs'>Vercel</link>; "
+        "<link href='https://learning.postman.com/docs/postman-cli/postman-cli-overview/'>Postman CLI</link>. "
+        "Full evidence mapping: docs/assignment-checklist.md.",
+        "small",
     )
 
-    output = ROOT / "output/pdf"
-    output.mkdir(parents=True, exist_ok=True)
-    target = output / "23L-0907_VisionGuard.pdf"
+    output = ROOT / "output/pdf/23L-0907_VisionGuard.pdf"
+    output.parent.mkdir(parents=True, exist_ok=True)
 
     def footer(canvas, doc):
         canvas.saveState()
@@ -1229,36 +983,32 @@ def main():
         canvas.line(42, 37, 570, 37)
         canvas.setFont("Body", 7)
         canvas.setFillColor(colors.HexColor("#50616a"))
-        canvas.drawString(
-            42,
-            24,
-            "Syed Muhammad Hanzala | 23L-0907_A2_Ops | " + now.strftime("%d %b %Y"),
-        )
+        canvas.drawString(42, 24, "Syed Muhammad Hanzala | 23L-0907_A2_Ops")
         canvas.drawRightString(570, 24, str(doc.page))
         canvas.restoreState()
 
     doc = SimpleDocTemplate(
-        str(target),
+        str(output),
         pagesize=(612, 792),
         leftMargin=42,
         rightMargin=42,
-        topMargin=42,
-        bottomMargin=52,
+        topMargin=38,
+        bottomMargin=50,
         title="23L-0907 VisionGuard assignment report",
         author="Syed Muhammad Hanzala",
     )
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
-    assert target.stat().st_size < 10 * 1024**2, (
+    assert output.stat().st_size < 10 * 1024**2, (
         "Keep the report below the Git file-size limit"
     )
     assert shutil.disk_usage(ROOT).free >= 2 * 1024**3
     print(
         json.dumps(
             {
-                "pdf": str(target),
+                "pdf": str(output),
                 "source_commit": commit,
-                "figures": figure_number,
-                "bytes": target.stat().st_size,
+                "figures": figures,
+                "bytes": output.stat().st_size,
             },
             indent=2,
         )

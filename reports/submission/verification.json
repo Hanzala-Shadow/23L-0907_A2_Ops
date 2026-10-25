@@ -1,12 +1,12 @@
 {
-  "checked_at_utc": "2026-10-24T20:01:08.706451+00:00",
+  "checked_at_utc": "2026-10-25T19:42:26.803865+00:00",
   "source_commit": "90b93195d46d58ecfcae174062cf6f5fef8c28bf",
   "report_path": "output/pdf/23L-0907_VisionGuard.pdf",
   "report_validation": {
-    "pdf_sha256": "357bbfd8aa24697fa89f40f4656ca7a3b67e913f33a2270050259325792595ec",
-    "pdf_bytes": 4731512,
-    "pages": 41,
-    "figures": 46,
+    "pdf_sha256": "c9d75d256157f7f3776b3a81b1fb74d9ac2955e1d84bc91f2e6d961aa321becd",
+    "pdf_bytes": 2633739,
+    "pages": 15,
+    "figures": 44,
     "required_subtask_ids_present": [
       "1.1",
       "1.2",
@@ -41,7 +41,8 @@
     "source_commit_on_cover": "90b93195d46d58ecfcae174062cf6f5fef8c28bf",
     "assistance_disclosure_present": true,
     "all_pages_visually_reviewed": true,
-    "configured_secret_scan_passed": true
+    "configured_secret_scan_passed": true,
+    "previous_report_pages": 41
   },
   "source_ci": {
     "url": "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/actions/runs/40127571425",
@@ -94,5 +95,12 @@
     "Provide the API key privately if the grader needs predictions"
   ],
   "optional_grad_cam_attempted": false,
-  "report_commit_contains_executable_changes": false
+  "revision_scope": {
+    "report_builder_changed": true,
+    "application_runtime_changed": false,
+    "saved_metrics_and_figures_only": true,
+    "training_or_test_inference_performed": false,
+    "graded_implementation_revision_unchanged": true
+  },
+  "report_revision_free_disk_gib": 2.3426551818847656
 }
