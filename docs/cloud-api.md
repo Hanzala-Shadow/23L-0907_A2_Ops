@@ -83,7 +83,27 @@ $0 plan selected. No card was added and no Render service was created.
 
 ## HTTP contract
 
-`GET /` displays the VisionGuard product page and API usage instructions.
+`GET /` displays the VisionGuard upload website. Visitors choose or drop one
+image, preview it locally, and submit it to `POST /classify`. The page displays
+the likely class, model confidence and a caveat. No API key is sent to the
+browser. Both upload routes share the same loaded interpreter, saved threshold,
+image validation and single inference slot. The cloud website does not write to
+the local PostgreSQL database.
+
+The browser route uses a signed, secure, HttpOnly, SameSite=Lax session cookie
+with a 30-minute lifetime and a matching form token. Its signing key is derived
+on the server from the existing API secret using a separate HMAC purpose.
+Cross-site form submissions are rejected. A bounded in-memory limiter allows
+six checks per minute per session and twenty per minute per warm function instance,
+returning 429 with Retry-After. Limits reset on cold starts and do not provide
+a shared quota across instances. The existing key-protected `/predict` route
+continues serving the local Flask app and Postman.
+
+Static CSS and JavaScript are served from the same origin under a restrictive
+Content Security Policy. The page uses a 55-second browser timeout and readable
+validation, connectivity, busy-service and session-expiry messages.
+
+`GET /` also includes collapsible API usage instructions.
 Public pages and responses use the product name. Internal model registry names
 and existing PostgreSQL rows retain their original provenance. The earlier
 assignment API origin remains an alias so links in the submitted report work.

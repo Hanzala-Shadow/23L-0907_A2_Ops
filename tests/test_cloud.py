@@ -1,6 +1,7 @@
 import hashlib
 import io
 import json
+import re
 import zipfile
 
 import numpy as np
@@ -13,7 +14,7 @@ from scripts.fetch_cloud_model import (
     unpack_bundle,
 )
 from visionguard import PROJECT_NAME
-from visionguard.cloud import create_app, load_cloud_bundle
+from visionguard.cloud import BrowserLimiter, create_app, load_cloud_bundle
 
 KEY = "test-secret-value-that-is-at-least-32-characters"
 
@@ -125,6 +126,94 @@ def test_public_pages_and_predictions_use_product_identity(bundle):
         assert b"fixture" not in response.data and KEY.encode() not in response.data
     for response in (landing, health, prediction):
         assert b"23L-0907" not in response.data and b"MLOps" not in response.data
+
+
+def browser_session(app):
+    client = app.test_client()
+    page = client.get("/", base_url="https://localhost")
+    token = re.search(rb'name="csrf_token" value="([^"]+)"', page.data)[1].decode()
+    return client, token, page
+
+
+def browser_upload(client, token, **kwargs):
+    return client.post(
+        "/classify",
+        base_url="https://localhost",
+        data={"csrf_token": token, "image": (io.BytesIO(image_bytes()), "image.png")},
+        **kwargs,
+    )
+
+
+def test_browser_upload_needs_no_api_key_and_uses_same_loaded_model(bundle):
+    Interpreter.loads = 0
+    app = make_app(bundle)
+    client, token, page = browser_session(app)
+    assert b'name="image"' in page.data and KEY.encode() not in page.data
+    cookie = page.headers["Set-Cookie"]
+    assert all(part in cookie for part in ["Secure", "HttpOnly", "SameSite=Lax"])
+    assert "script-src 'self'" in page.headers["Content-Security-Policy"]
+    response = browser_upload(client, token)
+    assert response.status_code == 200
+    assert response.json["label"] == "ai_generated"
+    assert response.json["threshold"] == 0.6
+    assert response.json["model"]["name"] == PROJECT_NAME
+    assert Interpreter.loads == 1
+    assert client.post("/predict").status_code == 401
+    for filename in ["api.css", "api.js"]:
+        static = client.get("/static/" + filename)
+        assert static.status_code == 200 and KEY.encode() not in static.data
+
+
+def test_browser_rejects_missing_changed_or_cross_session_tokens(bundle):
+    app = make_app(bundle)
+    client, token, _ = browser_session(app)
+    assert browser_upload(client, "").status_code == 403
+    assert browser_upload(client, "changed").status_code == 403
+    assert browser_upload(app.test_client(), token).status_code == 403
+    assert (
+        browser_upload(
+            client, token, headers={"Sec-Fetch-Site": "cross-site"}
+        ).status_code
+        == 403
+    )
+
+
+def test_browser_session_expires_and_reuses_api_upload_validation(bundle, monkeypatch):
+    import time
+
+    app = make_app(bundle)
+    client, token, _ = browser_session(app)
+    for content, filename, status in [
+        (b"text", "image.txt", 415),
+        (b"broken", "image.png", 400),
+    ]:
+        response = client.post(
+            "/classify",
+            base_url="https://localhost",
+            data={"csrf_token": token, "image": (io.BytesIO(content), filename)},
+        )
+        assert response.status_code == status
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now + 1801)
+    assert browser_upload(client, token).status_code == 403
+
+
+def test_public_browser_checks_have_limits_and_recover(bundle):
+    app = make_app(bundle)
+    client, token, _ = browser_session(app)
+    now = [0]
+    app.extensions["browser_limiter"].clock = lambda: now[0]
+    for _ in range(6):
+        assert browser_upload(client, token).status_code == 200
+    blocked = browser_upload(client, token)
+    assert blocked.status_code == 429 and blocked.headers["Retry-After"] == "60"
+    now[0] = 61
+    assert browser_upload(client, token).status_code == 200
+    limiter = BrowserLimiter(clock=lambda: 0)
+    for index in range(20):
+        assert limiter.retry_after(str(index)) == 0
+    assert limiter.retry_after("another-session") == 60
+    assert len(limiter.clients) == 20
 
 
 @pytest.mark.parametrize(

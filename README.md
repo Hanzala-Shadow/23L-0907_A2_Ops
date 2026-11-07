@@ -178,7 +178,14 @@ Fine-tuning did not improve validation loss. These are provisional validation
 results; the test set has not been evaluated. See the
 [result analysis](reports/training/transfer-results.md).
 
-## Cloud model API
+## Cloud website and model API
+
+The [live VisionGuard website](https://visionguard-image-api.vercel.app) accepts
+image uploads directly in the browser, with a preview, likely class, confidence
+and an honest caveat. Website visitors do not need an API key. The separate
+`/predict` API remains key-protected for server clients. Uploaded images are
+processed in memory and not saved by the cloud service.
+
 
 The standalone API uses a float32 LiteRT export of champion version 2 for
 Vercel's free Hobby plan. It preserves the saved threshold and all validation

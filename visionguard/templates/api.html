@@ -3,40 +3,71 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="VisionGuard classifies visual patterns in AI-generated and real images.">
-  <title>{{ project_name }} | Image classification API</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #f6f7f4; color: #203c35; font: 17px/1.65 system-ui, sans-serif; }
-    main { max-width: 820px; margin: 8vh auto; padding: 28px; }
-    .brand { font-size: 20px; font-weight: 750; letter-spacing: -.04em; }
-    .eyebrow { margin-top: 65px; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
-    h1 { max-width: 700px; margin: 12px 0 20px; font-size: clamp(36px, 7vw, 62px); line-height: 1.1; letter-spacing: -.05em; }
-    .lead { max-width: 630px; color: #53665d; font-size: 19px; }
-    section { margin-top: 34px; padding: 24px; border: 1px solid #d7dfd7; border-radius: 12px; background: white; }
-    h2 { margin-top: 0; font-size: 21px; }
-    a { color: #245f4a; }
-    code { overflow-wrap: anywhere; font-size: 14px; }
-    pre { overflow-x: auto; margin: 18px 0 0; padding: 16px; border-radius: 8px; background: #f0f3ee; line-height: 1.7; }
-    .note { color: #68746c; font-size: 14px; }
-    footer { margin-top: 35px; border-top: 1px solid #d7dfd7; padding-top: 20px; font-size: 14px; color: #68746c; }
-  </style>
+  <meta name="description" content="Upload an image to VisionGuard for an estimate of whether it is AI-generated or real.">
+  <title>{{ project_name }} | Check an image</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='api.css') }}">
+  <script src="{{ url_for('static', filename='api.js') }}" defer></script>
 </head>
 <body>
-<main>
-  <header class="brand">{{ project_name }}</header>
-  <p class="eyebrow">Image classification API</p>
-  <h1>Another perspective on your image.</h1>
-  <p class="lead">Check visual patterns associated with AI-generated and real images. Receive a likely class and a confidence score.</p>
-  <section aria-labelledby="usage">
-    <h2 id="usage">Use the API</h2>
-    <p><a href="{{ url_for('health') }}">View service health</a> or send an image to <code>POST /predict</code> with your API key.</p>
-    <pre><code>curl {{ api_origin }}/predict \
+  <header class="site-header">
+    <a class="brand" href="/">{{ project_name }}</a>
+    <a class="nav-link" href="#about">How it works</a>
+  </header>
+  <main>
+    <div class="workspace">
+      <section class="intro" aria-labelledby="headline">
+        <p class="eyebrow">AI image check</p>
+        <h1 id="headline">Get a second look.</h1>
+        <p class="lead">Upload an image and explore whether its visual patterns look more like AI-generated or real images.</p>
+        <div class="facts">
+          <p><strong>A clear result</strong><span>A likely class and a model confidence score.</span></p>
+          <p><strong>Just for this check</strong><span>Your image is processed in memory and isn't saved by this service.</span></p>
+        </div>
+      </section>
+      <section class="checker" aria-labelledby="check-title">
+        <div class="card-heading"><span class="step">01</span><h2 id="check-title">Choose your image</h2></div>
+        <form id="image-form" action="{{ url_for('browser_predict') }}" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="drop-area" id="drop-area">
+            <input class="file-input" type="file" name="image" id="image-input" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" aria-describedby="upload-help" required>
+            <label class="file-label" for="image-input">
+              <span class="choose-text">Choose an image</span>
+              <span class="drop-text">or drag and drop it here</span>
+            </label>
+            <div id="preview-area" hidden>
+              <img id="preview" alt="Preview of your selected image">
+              <p id="filename" class="filename"></p>
+              <label class="change-file" for="image-input">Choose a different image</label>
+            </div>
+          </div>
+          <p class="upload-help" id="upload-help">JPEG, PNG or WebP. Up to 4 MiB and 4 million pixels.</p>
+          <button id="check-button" class="primary-button" type="submit" disabled>Check image</button>
+          <p id="status" class="status" role="status" aria-live="polite">Choose an image to get started.</p>
+          <p id="error" class="error" role="alert" hidden></p>
+        </form>
+        <noscript><p class="error">Enable JavaScript to preview your image and see the result.</p></noscript>
+        <section id="result" class="result" aria-labelledby="result-title" hidden>
+          <p class="eyebrow">Your result</p>
+          <h2 id="result-title" tabindex="-1"></h2>
+          <div class="confidence-line"><span>Model confidence</span><strong id="confidence"></strong></div>
+          <meter id="confidence-meter" min="0" max="1" value="0" aria-label="Model confidence"></meter>
+          <p id="result-description"></p>
+          <p class="result-caveat">This is an estimate, not proof of origin. Edited images, artwork and unfamiliar styles can confuse the model.</p>
+        </section>
+      </section>
+    </div>
+    <section class="about" id="about" aria-labelledby="about-title">
+      <h2 id="about-title">One signal. Your judgment.</h2>
+      <p>{{ project_name }} compares visual patterns with those learned from AI-generated and real-labeled examples. The confidence score describes the model's preference for its chosen class; it does not guarantee authenticity. Consider the source and context alongside the result.</p>
+    </section>
+    <details class="api-details">
+      <summary>For developers</summary>
+      <p>The separate prediction API requires an API key. Keep it on your server.</p>
+      <pre><code>curl {{ api_origin }}/predict \
   -H "X-API-Key: $VISIONGUARD_API_KEY" \
   -F "image=@photo.png"</code></pre>
-    <p class="note">JPEG, PNG or WebP. Maximum 4 MiB and 4 million pixels. Images are processed in memory and are not stored by this API. Keep your API key private.</p>
-  </section>
-  <footer>A model's opinion, not proof of origin. Results can be wrong and cannot establish an image's authenticity.</footer>
-</main>
+    </details>
+  </main>
+  <footer><span>{{ project_name }} &middot; A second look at your images.</span><a href="{{ url_for('health') }}">Service health</a></footer>
 </body>
 </html>

@@ -6,17 +6,51 @@ import io
 import json
 import math
 import os
+import secrets
 import threading
+import time
+from collections import deque
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from werkzeug.exceptions import HTTPException
 
 from visionguard import PROJECT_NAME, PUBLIC_API_ORIGIN
 from visionguard.inference import ImagePredictor
 from visionguard.preprocessing import POLICY_VERSION
 from visionguard.uploads import MemoryRequest, UploadError, validate_upload
+
+
+class BrowserLimiter:
+    """Bound public checks per session and warm instance, without storing images."""
+
+    def __init__(self, clock=time.monotonic):
+        self.clock = clock
+        self.lock = threading.Lock()
+        self.total = deque()
+        self.clients = {}
+
+    def retry_after(self, token):
+        with self.lock:
+            now = self.clock()
+            while self.total and self.total[0] <= now - 60:
+                self.total.popleft()
+            for key in list(self.clients):
+                queue = self.clients[key]
+                while queue and queue[0] <= now - 60:
+                    queue.popleft()
+                if not queue:
+                    del self.clients[key]
+            queue = self.clients.get(token, deque())
+            if len(self.total) >= 20 or len(queue) >= 6:
+                oldest = self.total[0] if len(self.total) >= 20 else queue[0]
+                return max(1, math.ceil(oldest + 60 - now))
+            self.total.append(now)
+            queue.append(now)
+            self.clients[token] = queue
+            return 0
 
 
 class LiteModel:
@@ -98,11 +132,23 @@ def create_app(config=None, bundle_loader=load_cloud_bundle):
     secret = app.config["MODEL_API_KEY"]
     if not isinstance(secret, str) or len(secret) < 32:
         raise ValueError("MODEL_API_KEY must contain at least 32 characters")
+    app.config.update(
+        SECRET_KEY=hmac.digest(
+            secret.encode(), b"visionguard-browser-session", "sha256"
+        ),
+        SESSION_COOKIE_NAME="visionguard_session",
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
+    )
     predictor, policy = bundle_loader(
         app.config["CLOUD_MODEL_DIR"], app.config["CLOUD_MANIFEST_PATH"]
     )
     gate = threading.BoundedSemaphore(1)
+    limiter = BrowserLimiter()
     app.extensions["predictor"] = predictor
+    app.extensions["browser_limiter"] = limiter
     metadata = {
         "name": PROJECT_NAME,
         "version": policy["registry_version"],
@@ -116,6 +162,13 @@ def create_app(config=None, bundle_loader=load_cloud_bundle):
     def response_headers(response):
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; "
+            "img-src 'self' blob:; object-src 'none'; base-uri 'none'; "
+            "frame-ancestors 'none'; form-action 'self'; connect-src 'self'"
+        )
         return response
 
     @app.errorhandler(HTTPException)
@@ -124,8 +177,14 @@ def create_app(config=None, bundle_loader=load_cloud_bundle):
 
     @app.get("/")
     def index():
+        if "csrf_token" not in session:
+            session["csrf_token"] = secrets.token_urlsafe(32)
+        session.permanent = True
         return render_template(
-            "api.html", project_name=PROJECT_NAME, api_origin=PUBLIC_API_ORIGIN
+            "api.html",
+            project_name=PROJECT_NAME,
+            api_origin=PUBLIC_API_ORIGIN,
+            csrf_token=session["csrf_token"],
         )
 
     @app.get("/health")
@@ -137,6 +196,35 @@ def create_app(config=None, bundle_loader=load_cloud_bundle):
         token = request.headers.get("X-API-Key", "")
         if len(token) > 256 or not hmac.compare_digest(token.encode(), secret.encode()):
             return {"error": "unauthorized"}, 401
+        return classify_image()
+
+    @app.post("/classify")
+    def browser_predict():
+        token = request.form.get("csrf_token", "")
+        expected = session.get("csrf_token", "")
+        if (
+            not expected
+            or len(token) > 128
+            or not hmac.compare_digest(token.encode(), expected.encode())
+            or request.headers.get("Sec-Fetch-Site") == "cross-site"
+        ):
+            return {
+                "error": "invalid_session",
+                "message": "Refresh this page, then choose your image again.",
+            }, 403
+        retry = limiter.retry_after(expected)
+        if retry:
+            return (
+                {
+                    "error": "rate_limited",
+                    "message": "Please wait a minute before checking another image.",
+                },
+                429,
+                {"Retry-After": str(retry)},
+            )
+        return classify_image()
+
+    def classify_image():
         if not gate.acquire(blocking=False):
             return (
                 {"error": "busy", "message": "Retry after the current prediction."},
