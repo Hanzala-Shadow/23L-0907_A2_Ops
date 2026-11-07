@@ -16,7 +16,9 @@ upload page explains that classification sends the image to the cloud.
 
 ## Configure and run
 
-The ignored `.env.cloud` from deployment supplies the deployed origin and key.
+The ignored `.env.cloud` supplies `https://visionguard-image-api.vercel.app`
+and the API key. The previous assignment origin remains accepted for a rolling
+upgrade. Both origins are pinned; other hosts and redirects are rejected.
 The setup command copies only those two values into ignored `.env`, enables
 remote inference, and preserves PostgreSQL and Flask session credentials:
 
@@ -33,7 +35,7 @@ service to `visionguard:client`. This small image uses `Dockerfile.client` and
 `requirements/client.lock`; it does not install TensorFlow, DVC, or MLflow.
 The original `visionguard:local` image and champion files remain available.
 
-GitHub Actions builds and checks the client image, then publishes the private
+GitHub Actions builds and checks the client image, then publishes the
 `cloud-client-image` workflow artifact for one day. This machine downloads
 and loads that image instead of rebuilding TensorFlow. Before loading it,
 verify its checksum and leave enough space for the image import as well as

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VisionGuard classifies visual patterns in AI-generated and real images.">
+  <title>{{ project_name }} | Image classification API</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f6f7f4; color: #203c35; font: 17px/1.65 system-ui, sans-serif; }
+    main { max-width: 820px; margin: 8vh auto; padding: 28px; }
+    .brand { font-size: 20px; font-weight: 750; letter-spacing: -.04em; }
+    .eyebrow { margin-top: 65px; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+    h1 { max-width: 700px; margin: 12px 0 20px; font-size: clamp(36px, 7vw, 62px); line-height: 1.1; letter-spacing: -.05em; }
+    .lead { max-width: 630px; color: #53665d; font-size: 19px; }
+    section { margin-top: 34px; padding: 24px; border: 1px solid #d7dfd7; border-radius: 12px; background: white; }
+    h2 { margin-top: 0; font-size: 21px; }
+    a { color: #245f4a; }
+    code { overflow-wrap: anywhere; font-size: 14px; }
+    pre { overflow-x: auto; margin: 18px 0 0; padding: 16px; border-radius: 8px; background: #f0f3ee; line-height: 1.7; }
+    .note { color: #68746c; font-size: 14px; }
+    footer { margin-top: 35px; border-top: 1px solid #d7dfd7; padding-top: 20px; font-size: 14px; color: #68746c; }
+  </style>
+</head>
+<body>
+<main>
+  <header class="brand">{{ project_name }}</header>
+  <p class="eyebrow">Image classification API</p>
+  <h1>Another perspective on your image.</h1>
+  <p class="lead">Check visual patterns associated with AI-generated and real images. Receive a likely class and a confidence score.</p>
+  <section aria-labelledby="usage">
+    <h2 id="usage">Use the API</h2>
+    <p><a href="{{ url_for('health') }}">View service health</a> or send an image to <code>POST /predict</code> with your API key.</p>
+    <pre><code>curl {{ api_origin }}/predict \
+  -H "X-API-Key: $VISIONGUARD_API_KEY" \
+  -F "image=@photo.png"</code></pre>
+    <p class="note">JPEG, PNG or WebP. Maximum 4 MiB and 4 million pixels. Images are processed in memory and are not stored by this API. Keep your API key private.</p>
+  </section>
+  <footer>A model's opinion, not proof of origin. Results can be wrong and cannot establish an image's authenticity.</footer>
+</main>
+</body>
+</html>

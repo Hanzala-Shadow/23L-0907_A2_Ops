@@ -10,6 +10,7 @@ from flask import request
 from PIL import Image
 from sqlalchemy.exc import OperationalError
 
+from visionguard import PROJECT_NAME
 from visionguard.database import HistoryStore
 from visionguard.serving import ModelService
 from visionguard.web import create_app
@@ -99,6 +100,18 @@ def test_success_result_history_and_one_model_instance(app, client):
     stored = app.extensions["history"].get(uuid.UUID(first.json["id"]))
     assert stored.image_sha256 and stored.image_bytes > 0 and stored.image_width == 24
     assert stored.created_at is not None and stored.processing_ms >= 0
+    assert stored.model_name == "23L-0907_A2_Ops" and stored.model_run_id == "r" * 32
+    assert first.json["model_name"] == PROJECT_NAME
+    assert "model_run_id" not in first.json
+    assert history.json["items"][0]["model_name"] == PROJECT_NAME
+    for page in (
+        client.get("/"),
+        result,
+        client.get("/history"),
+        client.get("/health"),
+    ):
+        assert PROJECT_NAME.encode() in page.data
+        assert b"23L-0907" not in page.data and b"MLOps" not in page.data
 
 
 @pytest.mark.parametrize(

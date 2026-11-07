@@ -1,7 +1,7 @@
 # Cloud model API
 
-Live health check: [23l-0907-a2-ops-api.vercel.app/health](https://23l-0907-a2-ops-api.vercel.app/health).
-Prediction endpoint: `POST https://23l-0907-a2-ops-api.vercel.app/predict`.
+Live health check: [visionguard-image-api.vercel.app/health](https://visionguard-image-api.vercel.app/health).
+Prediction endpoint: `POST https://visionguard-image-api.vercel.app/predict`.
 The API key is stored only in ignored `.env.cloud` and Vercel production secrets.
 
 The cloud API runs on Vercel Hobby with Python 3.12 and CPU-only inference.
@@ -31,22 +31,23 @@ probabilities and decisions before writing the bundle. The original champion
 is never modified. Commit only the DVC pointer, manifest, and verification
 reports; keep model files out of Git.
 
-Upload `reports/training-runtime/cloud/champion-api.zip` as the private
-`cloud-v1` GitHub release asset. The checked-in manifest pins its SHA-256 and
-both contained files. Prepare a short-lived model-only download URL:
+The existing `cloud-v1` GitHub release contains the model-only bundle
+`champion-api.zip`. The repository is now public, so cloud builds can use its
+stable release URL without an account token or expiring download link:
 
-```bash
-.venv/bin/python scripts/cloud_release_url.py
+```text
+https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/releases/download/cloud-v1/champion-api.zip
 ```
 
-This writes `.env.cloud` with mode 0600. Keep this file local. The signed URL
-has a short-lived embedded download token and grants download access only to
-that release asset. Refresh it immediately before each build. The GitHub account token and DagsHub credentials stay on this machine.
+The checked-in manifest pins the archive SHA-256 and both contained files. The
+downloader accepts only this exact public release URL or the previous signed
+GitHub asset host. It verifies size, archive members and checksums before writing
+the model. Never replace a release asset without updating its pinned manifest.
 
 ## Vercel Hobby deployment
 
-The existing `hanzala-shadows-projects` account uses the free Hobby plan.
-The project is `23l-0907-a2-ops-api`, region Frankfurt (`fra1`). Hobby includes
+The existing project uses the free Hobby plan and region Frankfurt (`fra1`).
+Its public origin is `https://visionguard-image-api.vercel.app`. Hobby includes
 2 GB RAM per function; this runtime measured about 179 MiB in local validation
 checks. The Python bundle stays below Vercel's 500 MB limit. Inference loads
 once per warm function instance; scale-out or a cold start creates another
@@ -62,12 +63,12 @@ Deployment uploads only the committed serving modules, dependency files,
 manifest, downloader, and Vercel configuration through the authenticated
 Vercel integration. Dataset files, local settings, training code, reports,
 Git metadata, and agent files are excluded. The model is fetched from the
-private release through its temporary signed URL.
+public release and checked against the committed manifest.
 
 Set `MODEL_BUNDLE_URL` and `MODEL_API_KEY` as encrypted Vercel production
 variables. Also set `OPENBLAS_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, and
 `PYTHONDONTWRITEBYTECODE=1`. Keep these secrets in ignored `.env.cloud`
-locally. Each deployment must use a fresh signed download URL and a commit
+locally. Each deployment uses the pinned release URL and a commit
 whose GitHub Actions checks have passed. Automatic Git deployments are off.
 
 Hobby is free for personal, non-commercial projects. Exceeding its usage
@@ -81,6 +82,12 @@ $0 plan selected. No card was added and no Render service was created.
 `render.yaml` remains an optional configuration reference.
 
 ## HTTP contract
+
+`GET /` displays the VisionGuard product page and API usage instructions.
+Public pages and responses use the product name. Internal model registry names
+and existing PostgreSQL rows retain their original provenance. The earlier
+assignment API origin remains an alias so links in the submitted report work.
+
 
 `GET /health` returns readiness, model version, hashes, and saved threshold.
 `POST /predict` requires an `X-API-Key` header and a multipart `image` file.

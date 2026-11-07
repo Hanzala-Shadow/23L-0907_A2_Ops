@@ -29,11 +29,23 @@ stack, reusing the champion model and persistent PostgreSQL history.
 The [GitHub Actions guide](docs/ci.md) describes automated linting, tests, Docker
 build checks and an isolated Compose integration check on hosted runners.
 
-The private [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
-contains the code, audit and versioning metadata. The private
+The public [GitHub repository](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops)
+contains the code, audit and versioning metadata. The public
 [DagsHub repository](https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops)
-mirrors GitHub and provides DVC storage and the MLflow endpoint. Access must be
-granted separately on both services before another user can clone and pull data.
+mirrors GitHub and provides DVC storage and the MLflow endpoint. The code, report, experiments and versioned artifacts are publicly readable.
+DagsHub storage clients may still require a free signed-in account.
+
+## Submission
+
+Submit the [15-page report](output/pdf/23L-0907_VisionGuard.pdf), this GitHub
+repository, the [DagsHub project](https://dagshub.com/Hanzala-Shadow/23L-0907_A2_Ops),
+and the [live VisionGuard API](https://visionguard-image-api.vercel.app).
+The separate [CI lab](https://github.com/Hanzala-Shadow/23L-0907_A2_Ops-ci-lab)
+contains the Python 3.11/3.12 failing-then-passing exercise. The Postman
+collection linked above is included in this repository. Share the prediction
+API key privately with the evaluator; keep it out of the report and public links.
+The report retains student details for grading; the live product uses only
+VisionGuard branding. The earlier API address remains an alias for report links.
 
 ## Environment
 
@@ -171,7 +183,7 @@ results; the test set has not been evaluated. See the
 The standalone API uses a float32 LiteRT export of champion version 2 for
 Vercel's free Hobby plan. It preserves the saved threshold and all validation
 decisions. The local Flask app and PostgreSQL history continue running locally.
-The [live health check](https://23l-0907-a2-ops-api.vercel.app/health) exposes
+The [live health check](https://visionguard-image-api.vercel.app/health) exposes
 readiness; predictions require an API key. See [cloud setup and HTTP contract](docs/cloud-api.md) and
 [export verification](reports/cloud/export.json).
 

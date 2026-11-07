@@ -16,7 +16,7 @@
     <p>The model compares visual patterns with its training data. It can make mistakes on both AI-generated and real images.</p>
     <p>Use this result as one signal. It cannot verify an image’s source, editing history or authenticity.</p>
     <dl class="summary-list"><div><dt>Checked</dt><dd>{{ record.created_at.strftime('%d %b %Y, %H:%M') }} UTC</dd></div><div><dt>Model version</dt><dd>{{ record.model_version }}</dd></div><div><dt>Processing time</dt><dd>{{ '%.0f'|format(record.processing_ms) }} ms</dd></div></dl>
-    <details><summary>Decision details</summary><dl class="summary-list"><div><dt>AI probability score</dt><dd>{{ '%.2f'|format(record.ai_probability * 100) }}%</dd></div><div><dt>AI decision threshold</dt><dd>{{ '%.2f'|format(record.threshold * 100) }}%</dd></div><div><dt>Model</dt><dd>{{ record.model_name }}</dd></div><div><dt>Preprocessing</dt><dd>{{ record.preprocessing_policy }}</dd></div></dl><p class="small">The saved decision policy favors avoiding false AI accusations. A “real” verdict can therefore have a class score below 50%.</p></details>
+    <details><summary>Decision details</summary><dl class="summary-list"><div><dt>AI probability score</dt><dd>{{ '%.2f'|format(record.ai_probability * 100) }}%</dd></div><div><dt>AI decision threshold</dt><dd>{{ '%.2f'|format(record.threshold * 100) }}%</dd></div><div><dt>Model</dt><dd>{{ project_name }}</dd></div></dl><p class="small">The saved decision policy favors avoiding false AI accusations. A “real” verdict can therefore have a class score below 50%.</p></details>
   </div>
 </section>
 {% else %}

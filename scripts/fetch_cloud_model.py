@@ -1,4 +1,4 @@
-"""Fetch a private release bundle during a cloud build and verify every file."""
+"""Fetch the pinned release bundle during a cloud build and verify every file."""
 
 import hashlib
 import io
@@ -13,6 +13,19 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_BUNDLE_BYTES = 24 * 1024**2
+PUBLIC_BUNDLE_URL = (
+    "https://github.com/Hanzala-Shadow/23L-0907_A2_Ops/"
+    "releases/download/cloud-v1/champion-api.zip"
+)
+
+
+def allowed_bundle_url(url):
+    parsed = urlsplit(url)
+    return url == PUBLIC_BUNDLE_URL or (
+        parsed.scheme == "https"
+        and parsed.netloc == "release-assets.githubusercontent.com"
+        and not parsed.fragment
+    )
 
 
 def unpack_bundle(data, manifest, destination):
@@ -45,12 +58,8 @@ def unpack_bundle(data, manifest, destination):
 
 def main():
     url = os.environ.get("MODEL_BUNDLE_URL", "")
-    parsed = urlsplit(url)
-    if (
-        parsed.scheme != "https"
-        or parsed.hostname != "release-assets.githubusercontent.com"
-    ):
-        raise SystemExit("MODEL_BUNDLE_URL must be a signed GitHub release asset URL")
+    if not allowed_bundle_url(url):
+        raise SystemExit("MODEL_BUNDLE_URL must use the pinned GitHub release asset")
     try:
         with urllib.request.urlopen(url, timeout=120) as response:
             data = response.read(MAX_BUNDLE_BYTES + 1)
@@ -59,7 +68,7 @@ def main():
     except (ValueError, OSError, urllib.error.URLError, zipfile.BadZipFile):
         # Signed URLs are credentials. Never include the URL or exception in logs.
         raise SystemExit(
-            "Model download failed; refresh the signed release URL"
+            "Model download failed; check release availability and the pinned manifest"
         ) from None
     print("Cloud model bundle downloaded and verified")
 

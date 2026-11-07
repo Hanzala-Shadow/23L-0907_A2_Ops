@@ -10,9 +10,10 @@ import threading
 from pathlib import Path
 
 import numpy as np
-from flask import Flask, request
+from flask import Flask, render_template, request
 from werkzeug.exceptions import HTTPException
 
+from visionguard import PROJECT_NAME, PUBLIC_API_ORIGIN
 from visionguard.inference import ImagePredictor
 from visionguard.preprocessing import POLICY_VERSION
 from visionguard.uploads import MemoryRequest, UploadError, validate_upload
@@ -103,7 +104,7 @@ def create_app(config=None, bundle_loader=load_cloud_bundle):
     gate = threading.BoundedSemaphore(1)
     app.extensions["predictor"] = predictor
     metadata = {
-        "name": policy["registry_name"],
+        "name": PROJECT_NAME,
         "version": policy["registry_version"],
         "threshold": policy["threshold"],
         "format": policy["format"],
@@ -120,6 +121,12 @@ def create_app(config=None, bundle_loader=load_cloud_bundle):
     @app.errorhandler(HTTPException)
     def http_error(error):
         return {"error": error.name.lower().replace(" ", "_")}, error.code
+
+    @app.get("/")
+    def index():
+        return render_template(
+            "api.html", project_name=PROJECT_NAME, api_origin=PUBLIC_API_ORIGIN
+        )
 
     @app.get("/health")
     def health():

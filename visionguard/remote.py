@@ -11,7 +11,10 @@ from urllib.parse import urlsplit
 import requests
 from PIL import Image
 
-API_ORIGIN = "https://23l-0907-a2-ops-api.vercel.app"
+from visionguard import PROJECT_NAME, PUBLIC_API_ORIGIN
+
+API_ORIGIN = PUBLIC_API_ORIGIN
+LEGACY_API_ORIGIN = "https://23l-0907-a2-ops-api.vercel.app"
 MAX_RESPONSE_BYTES = 16 * 1024
 
 
@@ -37,7 +40,11 @@ class RemoteModelService:
         self, url, key, policy_path, manifest_path, connect_timeout=3, read_timeout=45
     ):
         parsed = urlsplit(url)
-        if url.rstrip("/") != API_ORIGIN or parsed.query or parsed.fragment:
+        if (
+            url.rstrip("/") not in {API_ORIGIN, LEGACY_API_ORIGIN}
+            or parsed.query
+            or parsed.fragment
+        ):
             raise ValueError("MODEL_API_URL must be the deployed Vercel HTTPS origin")
         if (
             not isinstance(key, str)
@@ -162,15 +169,16 @@ class RemoteModelService:
 
     def _validate_model(self, value):
         expected = {
-            "name": self.policy["registry_name"],
             "version": self.policy["registry_version"],
             "threshold": self.policy["threshold"],
             "format": self.policy["format"],
             "sha256": self.policy["model_sha256"],
             "source_sha256": self.policy["source_model_sha256"],
         }
-        if not isinstance(value, dict) or any(
-            value.get(k) != v for k, v in expected.items()
+        if (
+            not isinstance(value, dict)
+            or value.get("name") not in {PROJECT_NAME, self.policy["registry_name"]}
+            or any(value.get(k) != v for k, v in expected.items())
         ):
             raise bad_response()
 

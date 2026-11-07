@@ -23,6 +23,7 @@ from flask import (
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import RequestEntityTooLarge
 
+from visionguard import PROJECT_NAME
 from visionguard.database import HistoryStore
 from visionguard.remote import RemoteInferenceError, RemoteModelService
 from visionguard.uploads import MemoryRequest, UploadError, safe_name, validate_upload
@@ -34,6 +35,7 @@ GIB = 1024**3
 def create_app(config=None, model_service=None, store=None):
     load_dotenv(ROOT / ".env", override=False)
     app = Flask(__name__, template_folder="templates", static_folder="static")
+    app.jinja_env.globals["project_name"] = PROJECT_NAME
     app.request_class = MemoryRequest
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("FLASK_SECRET_KEY"),
@@ -145,6 +147,12 @@ def create_app(config=None, model_service=None, store=None):
             "preprocessing_policy": policy["preprocessing"]["policy"],
             "threshold": policy["threshold"],
         }
+
+    def public_record(row):
+        result = row.as_dict()
+        result["model_name"] = PROJECT_NAME
+        result.pop("model_run_id", None)
+        return result
 
     @app.after_request
     def headers(response):
@@ -296,7 +304,7 @@ def create_app(config=None, model_service=None, store=None):
                 "The image could not be classified. Please try again.", 500, row
             )
         if json_requested():
-            return jsonify(row.as_dict()), 201
+            return jsonify(public_record(row)), 201
         return redirect(url_for("result", result_id=row.id), code=303)
 
     @app.get("/result/<uuid:result_id>")
@@ -309,7 +317,7 @@ def create_app(config=None, model_service=None, store=None):
         if row is None:
             abort(404)
         return (
-            jsonify(row.as_dict())
+            jsonify(public_record(row))
             if json_requested()
             else render_template("result.html", record=row)
         )
@@ -329,7 +337,7 @@ def create_app(config=None, model_service=None, store=None):
             return error_page("History is unavailable. Please try again later.", 503)
         if json_requested():
             return jsonify(
-                items=[row.as_dict() for row in rows], page=page, total=total
+                items=[public_record(row) for row in rows], page=page, total=total
             )
         return render_template(
             "history.html",
@@ -362,7 +370,7 @@ def create_app(config=None, model_service=None, store=None):
                 "backend": "vercel" if remote else "local",
                 "status": "ok" if model_ok else "unavailable",
                 "error_code": cloud.get("error_code") if cloud else None,
-                "name": model_service.policy["registry_name"],
+                "name": PROJECT_NAME,
                 "version": model_service.policy["registry_version"],
                 "threshold": model_service.policy["threshold"],
             },

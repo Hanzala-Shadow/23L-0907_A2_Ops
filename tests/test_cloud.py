@@ -7,7 +7,12 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from scripts.fetch_cloud_model import unpack_bundle
+from scripts.fetch_cloud_model import (
+    PUBLIC_BUNDLE_URL,
+    allowed_bundle_url,
+    unpack_bundle,
+)
+from visionguard import PROJECT_NAME
 from visionguard.cloud import create_app, load_cloud_bundle
 
 KEY = "test-secret-value-that-is-at-least-32-characters"
@@ -102,6 +107,41 @@ def test_api_loads_once_and_uses_saved_policy(bundle):
         assert response.json["threshold"] == 0.6
         assert response.headers["Cache-Control"] == "no-store"
     assert Interpreter.loads == 1
+
+
+def test_public_pages_and_predictions_use_product_identity(bundle):
+    client = make_app(bundle).test_client()
+    landing = client.get("/")
+    assert landing.status_code == 200 and PROJECT_NAME.encode() in landing.data
+    assert b"X-API-Key" in landing.data
+    health = client.get("/health")
+    prediction = client.post(
+        "/predict",
+        headers={"X-API-Key": KEY},
+        data={"image": (io.BytesIO(image_bytes()), "image.png")},
+    )
+    for response in (health, prediction):
+        assert response.json["model"]["name"] == PROJECT_NAME
+        assert b"fixture" not in response.data and KEY.encode() not in response.data
+    for response in (landing, health, prediction):
+        assert b"23L-0907" not in response.data and b"MLOps" not in response.data
+
+
+@pytest.mark.parametrize(
+    "url,allowed",
+    [
+        (PUBLIC_BUNDLE_URL, True),
+        ("https://release-assets.githubusercontent.com/file?token=value", True),
+        (PUBLIC_BUNDLE_URL.replace("cloud-v1", "other"), False),
+        (PUBLIC_BUNDLE_URL + "?redirect=elsewhere", False),
+        ("https://github.com/other/repo/releases/download/x/model.zip", False),
+        ("https://release-assets.githubusercontent.com.evil.test/file", False),
+        ("https://user@release-assets.githubusercontent.com/file", False),
+        ("http://release-assets.githubusercontent.com/file", False),
+    ],
+)
+def test_release_download_origin_is_restricted(url, allowed):
+    assert allowed_bundle_url(url) is allowed
 
 
 @pytest.mark.parametrize("key", [None, "incorrect", "x" * 257, "non-ascii-\u00e9"])

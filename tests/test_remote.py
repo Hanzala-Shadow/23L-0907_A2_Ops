@@ -8,6 +8,7 @@ import pytest
 import requests
 from PIL import Image
 
+from visionguard import PROJECT_NAME
 from visionguard.database import HistoryStore
 from visionguard.remote import API_ORIGIN, RemoteInferenceError, RemoteModelService
 from visionguard.web import create_app
@@ -123,6 +124,17 @@ def test_success_bounds_time_and_sends_only_image_with_generic_filename(
     assert options["stream"] is True
     assert options["headers"] == {"X-API-Key": KEY}
     assert options["files"] == {"image": ("upload.png", pixels(), "image/png")}
+
+
+def test_product_name_preserves_pinned_model_checks(service, monkeypatch):
+    branded = result(service)
+    branded["model"]["name"] = PROJECT_NAME
+    changed = result(service)
+    changed["model"].update(name=PROJECT_NAME, sha256="c" * 64)
+    use_transport(service, monkeypatch, [Response(branded), Response(changed)])
+    assert service.predict(io.BytesIO(pixels()))["label"] == "ai_generated"
+    with pytest.raises(RemoteInferenceError, match="unexpected"):
+        service.predict(io.BytesIO(pixels()))
 
 
 @pytest.mark.parametrize(
